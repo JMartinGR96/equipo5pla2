@@ -24,3 +24,5 @@
 #define RETURN        280
 #define MASMAS        281
 #define ARROBA        282
+#define INI_DECLAR_VAR 283
+#define FIN_DECLAR_VAR 284

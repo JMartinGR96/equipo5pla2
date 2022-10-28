@@ -8,6 +8,7 @@ digito  [0-9]
 %option yylineno
 %option noyywrap
 %%
+
 "Robert"  								return(MAIN); 
 "return"  								return(RETURN);
 "while"   								return(MIENTRAS);
@@ -59,6 +60,8 @@ digito  [0-9]
 "-"										return(UNYBIN);
 "meter->"								return(METERDATOS);
 "sacar<-"								return(SACARDATOS);
+"begin_var"								return(INI_DECLAR_VAR);
+"/end_var"								return(FIN_DECLAR_VAR);
 \'[^\']\'                           	return(CONST);
 \"[^\"]*\"                           	return(CONST);
 "true"                         			return(CONST);
@@ -66,6 +69,9 @@ digito  [0-9]
 {digito}({digito})*						return(CONST);
 {digito}({digito})*"."({digito})*		return(CONST);
 {letra}({letra}|{digito})*				return(ID);
+
+
+
 [ \t]+                              	{}
 \n                                  	{}
 .                             			printf("Error lexico en línea %d, no se reconoce %s\n", yylineno, yytext);
