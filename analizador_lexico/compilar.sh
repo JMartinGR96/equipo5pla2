@@ -1,4 +1,4 @@
 #!/bin/sh
 
-lex compilador.l
-gcc -ll lex.yy.c -o compilador
+flex -l compilador.l
+gcc lex.yy.c -o compilador
