@@ -1,5 +1,6 @@
 %{
 #include "tabla_tokens.h"
+int atributo = -1;
 %}
 
 letra	[a-zA-Z_]
@@ -57,7 +58,7 @@ digito  [0-9]
 ">>"									return(OP_UNARIO);
 "!"										return(OP_UNARIO);
 "+"										return(UNYBIN);
-"-"										return(UNYBIN);
+"-"										atributo = 2; return(UNYBIN);
 "meter->"								return(METERDATOS);
 "sacar<-"								return(SACARDATOS);
 "begin_var"								return(INI_DECLAR_VAR);
@@ -100,7 +101,15 @@ int main(int argc, char** argv) {
 
   	// Continuamos lanzando yylex() mientras quede fichero por leer
   	while (analyzer != 0) {
-    	printf("__%d__ : %s\n", analyzer, yytext);
+    	printf("__%d__ : ", analyzer);
+		if (atributo != -1) {
+			printf("(%d) ", atributo);
+			atributo = -1;
+		}
+		else {
+			printf("(-) ");
+		}
+		printf("%s\n", yytext);
     	analyzer = yylex();
   	}
 
