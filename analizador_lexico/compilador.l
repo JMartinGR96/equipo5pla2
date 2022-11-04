@@ -17,9 +17,9 @@ digito  [0-9]
 "if"      								 				return(SI);
 "for"     								 				return(FOR);
 "to"      								 				return(TO);
-"then"    								atributo = 0; 	return(THENELSEDO);
-"else"    								atributo = 1; 	return(THENELSEDO);
-"do"      								atributo = 2; 	return(THENELSEDO);
+"then"    								 				return(THEN);
+"else"    								 				return(ELSE);
+"do"      								 				return(DO);
 "int"									atributo = 0; 	return(DECLAR);
 "char"          						atributo = 1; 	return(DECLAR);
 "float"         						atributo = 2; 	return(DECLAR);
