@@ -31,3 +31,4 @@
 #define OP_LIST_UN      287
 #define SENT_LIST       288
 #define DOLAR           289
+#define CADENA          290

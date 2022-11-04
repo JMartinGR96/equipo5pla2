@@ -70,7 +70,7 @@ digito  [0-9]
 "true"                         			atributo = 2; 	return(CONST);
 "false"                           		atributo = 2; 	return(CONST);
 \'[^\']\'                           	atributo = 3; 	return(CONST);
-\"[^\"]*\"                           	atributo = 4; 	return(CONST);
+\"[^\"]*\"                           	atributo = 4; 	return(CADENA);
 {letra}({letra}|{digito})*								return(ID);
 [ \t]+                              					{}
 \n                                  					{}
