@@ -53,11 +53,14 @@ digito  [0-9]
 "^"										atributo = 11; 	return(OP_BINARIO);
 "&&"									atributo = 12; 	return(OP_BINARIO);
 "||"									atributo = 13; 	return(OP_BINARIO);
-"!"										atributo = 0; 	return(OP_UNARIO);
-"<<"									atributo = 1; 	return(OP_UNARIO);
-">>"									atributo = 2; 	return(OP_UNARIO);
+"!"													 	return(NEGACION);
+"<<"									atributo = 0; 	return(SENT_LIST);
+">>"									atributo = 1; 	return(SENT_LIST);
+"#"										atributo = 0; 	return(OP_LIST_UN);
+"?"										atributo = 1; 	return(OP_LIST_UN);
 "+"										atributo = 0; 	return(UNYBIN);
 "-"										atributo = 1; 	return(UNYBIN);
+"$"													 	return(DOLAR);
 "meter->"												return(METERDATOS);
 "sacar<-"												return(SACARDATOS);
 "begin_var"												return(INI_DECLAR_VAR);
