@@ -1,6 +1,6 @@
 %{
-#include "tabla_tokens.h"
-int atributo = -1;
+	#include "tabla_tokens.h"
+	int atributo = -1;
 %}
 
 letra	[a-zA-Z_]
@@ -8,6 +8,7 @@ digito  [0-9]
 
 %option yylineno
 %option noyywrap
+
 %%
 
 "Robert"  								 				return(MAIN); 
@@ -67,16 +68,10 @@ digito  [0-9]
 "false"                           		atributo = 2; 	return(CONST);
 \'[^\']\'                           	atributo = 3; 	return(CONST);
 \"[^\"]*\"                           	atributo = 4; 	return(CONST);
-
-
-
 {letra}({letra}|{digito})*								return(ID);
-
-
-
-[ \t]+                              	{}
-\n                                  	{}
-.                             			printf("Error lexico en línea %d, no se reconoce %s\n", yylineno, yytext);
+[ \t]+                              					{}
+\n                                  					{}
+.                             							printf("Error lexico en línea %d, no se reconoce %s\n", yylineno, yytext);
 
 %%
 
@@ -102,8 +97,10 @@ int main(int argc, char** argv) {
 
   	// Continuamos lanzando yylex() mientras quede fichero por leer
   	while (analyzer != 0) {
+		// Mostramos el código del token...
     	printf("__%d__ : ", analyzer);
 		if (atributo != -1) {
+			// ...y su atributo en caso de que tenga.
 			printf("(%d) ", atributo);
 			atributo = -1;
 		}
