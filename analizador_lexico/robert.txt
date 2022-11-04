@@ -9,7 +9,7 @@ int Robert()
         list of float pf, pf2 ;
         list of char pc, pc2 ;
         list of bool pl ;
-    /end_var
+    end_var
 
 int funcionA (int a1, float a2, char a3)
 {
@@ -18,7 +18,9 @@ int funcionA (int a1, float a2, char a3)
 
     char funcionB (char b1, bool b2)
     {
-        
+	if(!b1){
+		b2 = false;
+	}        
         float xf, x2 ;
 
         float funcionC (bool c1, int c2)
