@@ -15,13 +15,11 @@
 //%start programa
 
 %token OP_ASIGNACION
-%token NEGACION
 %token ID
 %token CONST
 %token DECLAR
 %token PARDER
 %token PARIZQ
-%token UNYBIN
 %token METERDATOS
 %token MIENTRAS
 %token SI
@@ -37,17 +35,31 @@
 %token COMA
 %token MAIN
 %token RETURN
-%token MASMAS
-%token ARROBA
 %token INI_DECLAR_VAR
 %token FIN_DECLAR_VAR
 %token ELSE
 %token DO
-%token OP_LIST_UN
 %token SENT_LIST
 %token DOLAR
 %token CADENA
+%left OP_OR_LOG
+%left OP_AND_LOG
+%left OP_OR_BITS
+%left OP_OR_EXC
+%left OP_AND_BITS
+%left OP_EQ_NEQ
+%left OP_REL
+//%left MAS_MENOS (¿Se conserva la mayor o la menor precedencia?)
 %left OP_MUL
+//%left MOD_Y_BOR (¿Se conserva la mayor o la menor precedencia?)
+%left MAS_MENOS
+%left NEGACION
+%right OP_LIST_UN
+%left ARROBA
+%left MASMAS
+%left MENOSMENOS
+%left MOD_Y_BOR
+%left OP_LIST_MUL
 
 %%
 
