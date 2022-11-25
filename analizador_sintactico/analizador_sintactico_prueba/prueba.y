@@ -15,7 +15,6 @@
 //%start programa
 
 %token OP_ASIGNACION
-%token OP_BINARIO
 %token NEGACION
 %token ID
 %token CONST
@@ -48,6 +47,7 @@
 %token SENT_LIST
 %token DOLAR
 %token CADENA
+%left OP_MUL
 
 %%
 
@@ -126,24 +126,31 @@ expr_cad                    : expresion
 
 sentencia_return            : RETURN expresion PYC ;
 
-expresion                   : PARIZQ expresion PARDER 
-                            | op_unario expresion 
-                            | expresion op_binario expresion 
-                            | expresion MASMAS expresion ARROBA expresion 
-                            | ID 
-                            | CONST 
-                            | funcion 
-                            | agregado 
-                            | error ;
-
-op_binario                  : ARROBA 
-                            | OP_BINARIO 
-                            | UNYBIN ;
-
-op_unario                   : MASMAS 
-                            | UNYBIN 
-                            | NEGACION 
-                            | OP_LIST_UN ;
+expresion                   : PARIZQ expresion PARDER
+                            | MASMAS expresion
+                            | MENOSMENOS expresion
+                            | expresion MASMAS
+                            | expresion MENOSMENOS 
+                            | OP_LIST_UN expresion
+                            | MAS_MENOS expresion
+                            | NEGACION expresion
+                            | expresion ARROBA expresion
+                            | expresion MAS_MENOS expresion
+                            | expresion OP_LIST_MUL expresion
+                            | expresion OP_OR_LOG expresion
+                            | expresion OP_AND_LOG expresion
+                            | expresion OP_OR_BITS expresion
+                            | expresion OP_AND_BITS expresion
+                            | expresion MOD_Y_BOR expresion
+                            | expresion OP_OR_EXC expresion
+                            | expresion OP_EQ_NEQ expresion
+                            | expresion OP_REL expresion
+                            | expresion OP_MUL expresion
+                            | expresion MASMAS expresion ARROBA expresion
+                            | ID
+                            | CONST
+                            | funcion                     
+                            | agregado
 
 sentencia_adelante_atras    : ID SENT_LIST PYC ;
 

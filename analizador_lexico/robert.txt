@@ -1,12 +1,12 @@
 int Robert()
 {
-    begin_var
+    beg····in_var
         int ve ;
         float vf ;
         char vc ;
         bool vl ;
         list of int pe, pe2 ;
-        list of float pf, pf2 ;
+        lis····t of float pf, pf2 ;
         list of char pc, pc2 ;
         list of bool pl ;
     end_var
