@@ -76,7 +76,7 @@ Robert
     }
 
     id = (5*id)++;
-    id = (id ++ id2 @ 5) ** (id ++ id2 @ 6);
+    id = id ++ id2 @ 5 ** id ++ id2 @ 6;
     pl>>;
     asig = funcionD(hola);
 }

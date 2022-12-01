@@ -158,11 +158,12 @@ expresion                   : PARIZQ expresion PARDER
                             | expresion ASTERISCO expresion {printf("%s%d\n","Evaluada expresion de MULT binaria",linea_actual);}
                             | expresion OP_MUL expresion {printf("%s%d\n","Evaluada expresion de multiplicacion",linea_actual);}
                             | expresion MENOSMENOS expresion {printf("%s%d\n","Evaluada expresion de menos menos lista",linea_actual);}
-                            | expresion MASMAS expresion ARROBA expresion %prec NULO {printf("%s%d\n","Evaluada expresion de operador ternario",linea_actual);}
+                            | expresion MASMAS expresion ARROBA expresion {printf("%s%d\n","Evaluada expresion de operador ternario",linea_actual);}
                             | ID
                             | CONST
                             | funcion                     
                             | agregado
+                            
 
 sentencia_adelante_atras    : ID SENT_LIST PYC ;
 
