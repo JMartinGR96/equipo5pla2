@@ -6,7 +6,7 @@ y.tab.o: y.tab.c
 main.o: main.c
 		gcc -c main.c
 y.tab.c: prueba.y lex.yy.c
-		bison -o y.tab.c prueba.y
+		bison -v -o y.tab.c prueba.y
 lex.yy.c: prueba.l
 		flex prueba.l
 clean:
