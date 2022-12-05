@@ -3,6 +3,7 @@
     #include <stdlib.h>
     #include <stdio.h>
     #include <string.h>
+    #include "semantico.h"
 
     int yylex();
     void yyerror( const char * msg ) ;
