@@ -14,8 +14,6 @@
 
 %}
 
-//%start programa
-
 %token OP_ASIGNACION
 %token ID
 %token CONST
@@ -48,14 +46,11 @@
 %token ARRARR
 %left OP_OR_LOG
 %left OP_AND_LOG
-%left OP_OR_BITS
-%left OP_OR_EXC
-%left OP_AND_BITS
 %left OP_EQ_NEQ
 %left OP_REL
 %left MAS_MENOS MENOSMENOS MASMAS ARRARR
 %left OP_MUL ASTERISCO OP_LIST_MUL
-%right NEGACION OP_LIST_UN   //Prioridad derecha
+%right NEGACION OP_LIST_UN OP_AND_LIST
 %left ARROBA
 
 %%
@@ -145,15 +140,12 @@ expresion                   : PARIZQ expresion PARDER
                             | OP_LIST_UN expresion
                             | MAS_MENOS expresion %prec NEGACION
                             | NEGACION expresion
-                            | OP_AND_BITS expresion %prec NEGACION
+                            | OP_AND_LIST expresion
                             | expresion ARRARR expresion
                             | expresion MAS_MENOS expresion
                             | expresion OP_LIST_MUL expresion
                             | expresion OP_OR_LOG expresion
                             | expresion OP_AND_LOG expresion
-                            | expresion OP_OR_BITS expresion
-                            | expresion OP_AND_BITS expresion
-                            | expresion OP_OR_EXC expresion
                             | expresion OP_EQ_NEQ expresion
                             | expresion OP_REL expresion
                             | expresion ASTERISCO expresion
