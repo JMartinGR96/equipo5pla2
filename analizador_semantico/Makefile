@@ -6,6 +6,10 @@ OUT = output
 GEN = generated
 MAINSRC = ./Robert.txt
 
+.PHONY: all
+
+all: clean $(BIN)/sintactico run
+
 $(BIN)/sintactico: $(OBJ)/main.o $(OBJ)/y.tab.o
 		gcc -o $(BIN)/sintactico $(OBJ)/main.o $(OBJ)/y.tab.o
 $(OBJ)/y.tab.o: $(GEN)/y.tab.c
@@ -23,6 +27,3 @@ run:
 
 clean:
 		rm -rf $(GEN)/* $(OBJ)/* $(BIN)/*
-all:
-		make clean
-		make prueba
