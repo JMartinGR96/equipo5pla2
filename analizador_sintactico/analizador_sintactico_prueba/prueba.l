@@ -60,8 +60,8 @@ digito  [0-9]
 ">>"									atributo = 1; 	return(SENT_LIST);
 "#"										atributo = 0; 	return(OP_LIST_UN);
 "?"										atributo = 1; 	return(OP_LIST_UN);
-"+"										atributo = 0; 	return(MASMENOS);
-"-"										atributo = 1; 	return(MASMENOS);
+"+"										atributo = 0; 	return(MAS_MENOS);
+"-"										atributo = 1; 	return(MAS_MENOS);
 "$"													 	return(DOLAR);
 "meter->"												return(METERDATOS);
 "sacar<-"												return(SACARDATOS);

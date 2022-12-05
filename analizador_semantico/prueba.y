@@ -5,7 +5,7 @@
     #include <string.h>
 
     int yylex();
-    void yyerror( char * msg ) ;
+    void yyerror( const char * msg ) ;
 
     int linea_actual = 1 ;
 
@@ -43,7 +43,8 @@
 %token SENT_LIST
 %token DOLAR
 %token CADENA
-%right ASTERISCO
+%token ASTERISCO
+%token ARRARR
 %left OP_OR_LOG
 %left OP_AND_LOG
 %left OP_OR_BITS
@@ -51,13 +52,9 @@
 %left OP_AND_BITS
 %left OP_EQ_NEQ
 %left OP_REL
-%left MAS_MENOS
-%left OP_MUL
-%left NEGACION
-%right OP_LIST_UN
-%left OP_LIST_MUL
-%left MENOSMENOS
-%left MASMAS
+%left MAS_MENOS MENOSMENOS MASMAS ARRARR
+%left OP_MUL ASTERISCO OP_LIST_MUL
+%right NEGACION OP_LIST_UN   //Prioridad derecha
 %left ARROBA
 
 %%
@@ -109,7 +106,8 @@ sentencia                   : bloque
                             | sentencia_adelante_atras 
                             | sentencia_principio_lista ;
 
-sentencia_asignacion        : ID OP_ASIGNACION expresion PYC ;
+sentencia_asignacion        : ID OP_ASIGNACION expresion PYC 
+                            | error;
 
 sentencia_if                : SI PARIZQ expresion PARDER THEN sentencia 
                             | SI PARIZQ expresion PARDER THEN sentencia ELSE sentencia ;
@@ -138,17 +136,17 @@ expr_cad                    : expresion
 sentencia_return            : RETURN expresion PYC ;
 
 expresion                   : PARIZQ expresion PARDER
-                            | ASTERISCO ID
                             | MASMAS expresion
                             | MENOSMENOS expresion
                             | expresion MASMAS
-                            | expresion MENOSMENOS 
+                            | expresion MENOSMENOS
+                            | ASTERISCO expresion %prec NEGACION
                             | OP_LIST_UN expresion
-                            | MAS_MENOS expresion {printf("%s%d\n","Evaluada expresion de suma/resta unaria",linea_actual);}
-                            | MAS_MENOS expresion %prec OP_MUL {printf("%s%d\n","Evaluada expresion de prueba/resta unaria",linea_actual);}
-                            | NEGACION expresion  {printf("%s%d\n","Evaluada expresion de negacion unaria",linea_actual);}
-                            | expresion ARROBA expresion
-                            | expresion MAS_MENOS expresion {printf("%s%d\n","Evaluada expresion de suma/resta",linea_actual);}
+                            | MAS_MENOS expresion %prec NEGACION
+                            | NEGACION expresion
+                            | OP_AND_BITS expresion %prec NEGACION
+                            | expresion ARRARR expresion
+                            | expresion MAS_MENOS expresion
                             | expresion OP_LIST_MUL expresion
                             | expresion OP_OR_LOG expresion
                             | expresion OP_AND_LOG expresion
@@ -157,13 +155,15 @@ expresion                   : PARIZQ expresion PARDER
                             | expresion OP_OR_EXC expresion
                             | expresion OP_EQ_NEQ expresion
                             | expresion OP_REL expresion
-                            | expresion OP_MUL expresion {printf("%s%d\n","Evaluada expresion de multiplicacion",linea_actual);}
-                            | expresion MENOSMENOS expresion {printf("%s%d\n","Evaluada expresion de menos menos lista",linea_actual);}
-                            | expresion MASMAS expresion ARROBA expresion {printf("%s%d\n","Evaluada expresion de operador ternario",linea_actual);}
+                            | expresion ASTERISCO expresion
+                            | expresion OP_MUL expresion
+                            | expresion MENOSMENOS expresion
+                            | expresion MASMAS expresion ARROBA expresion
                             | ID
                             | CONST
                             | funcion                     
                             | agregado
+                            
 
 sentencia_adelante_atras    : ID SENT_LIST PYC ;
 
@@ -180,7 +180,7 @@ funcion                     : ID  PARIZQ lista_expresiones_o_cadena PARDER ;
 
 #include "lex.yy.c"
 
-void yyerror( char *msg ) 
+void yyerror(const char *msg ) 
 {
     fprintf(stderr,"[Linea %d]: %s\n", linea_actual, msg) ;
 }

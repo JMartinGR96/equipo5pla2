@@ -39,10 +39,11 @@ digito  [0-9]
 "++"            						 				return(MASMAS);
 "--"													return(MENOSMENOS);
 "@"             						 				return(ARROBA);
+"@@"													return(ARRARR);
 "="             						 				return(OP_ASIGNACION);
 "/" 		    						atributo = 0; 	return(OP_MUL);
 "%"             						atributo = 1; 	return(OP_MUL);
-
+"*"             						atributo = 2; 	return(ASTERISCO);
 "<" 									atributo = 3; 	return(OP_REL);
 "<="									atributo = 4; 	return(OP_REL);
 "=="									atributo = 5; 	return(OP_EQ_NEQ);
@@ -62,9 +63,6 @@ digito  [0-9]
 "?"										atributo = 1; 	return(OP_LIST_UN);
 "+"										atributo = 0; 	return(MAS_MENOS);
 "-"										atributo = 1; 	return(MAS_MENOS);
-
-"*"														return(ASTERISCO);
-
 "$"													 	return(DOLAR);
 "meter->"												return(METERDATOS);
 "sacar<-"												return(SACARDATOS);
@@ -79,7 +77,7 @@ digito  [0-9]
 {letra}({letra}|{digito})*								return(ID);
 [ \t]+                              					{}
 \n                                  					{linea_actual++;}
-.                             							printf("Error lexico en línea %d, no se reconoce %s\n", yylineno, yytext);
+.                             							printf("[Linea %d]: lexical error, no se reconoce %s\n", yylineno, yytext);
 
 %%
 
