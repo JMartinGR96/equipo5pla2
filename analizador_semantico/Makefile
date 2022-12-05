@@ -20,6 +20,7 @@ $(OBJ)/main.o: $(SRC)/main.c
 		gcc -c $(SRC)/main.c -I$(INC) -o $(OBJ)/main.o
 $(GEN)/y.tab.c: $(SRC)/gramatica.y $(GEN)/lex.yy.c
 		bison -v -o $(GEN)/y.tab.c $(SRC)/gramatica.y
+		mv $(GEN)/y.output $(OUT)
 $(GEN)/lex.yy.c: $(SRC)/tokens.l
 		flex $(SRC)/tokens.l
 		mv lex.yy.c $(GEN)
@@ -28,4 +29,4 @@ run:
 	./$(BIN)/semantico $(MAINSRC)
 
 clean:
-		rm -rf $(GEN)/* $(OBJ)/* $(BIN)/*
+		rm -rf $(GEN)/* $(OBJ)/* $(BIN)/* $(OUT)/*
