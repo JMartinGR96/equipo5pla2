@@ -79,4 +79,8 @@ Robert
     id = id ++ id2 @ (5+4);
     pl>>;
     asig = funcionD(hola);
+    pe = [1,2,3];
+
+    for ve = 3 to pl do {}
+    ve = pl++;
 }

@@ -69,15 +69,15 @@ digito  [0-9]
 "sacar<-"								{yylval.lex = strdup(yytext);					return(SACARDATOS);}
 "begin_var"								{yylval.lex = strdup(yytext);					return(INI_DECLAR_VAR);}
 "end_var"								{yylval.lex = strdup(yytext);					return(FIN_DECLAR_VAR);}
-{digito}({digito})*						{yylval.lex = strdup(yytext); yylval.attr = 0; 	return(CONST);}
-{digito}({digito})*"."({digito})*		{yylval.lex = strdup(yytext); yylval.attr = 1; 	return(CONST);}
-"true"                         			{yylval.lex = strdup(yytext); yylval.attr = 2; 	return(CONST);}
-"false"                           		{yylval.lex = strdup(yytext); yylval.attr = 3; 	return(CONST);}
-\'[^\']\'                           	{yylval.lex = strdup(yytext); yylval.attr = 4; 	return(CONST);}
+{digito}({digito})*						{yylval.lex = strdup(yytext); 				 	return(CONST_INT);}
+{digito}({digito})*"."({digito})*		{yylval.lex = strdup(yytext); yylval.attr = 1; 	return(CONST_FLOAT);}
+"true"                         			{yylval.lex = strdup(yytext); yylval.attr = 0; 	return(CONST_BOOL);}
+"false"                           		{yylval.lex = strdup(yytext); 				 	return(CONST_BOOL);}
+\'[^\']\'                           	{yylval.lex = strdup(yytext); 				 	return(CONST_CHAR);}
 \"[^\"]*\"                           	{yylval.lex = strdup(yytext);					return(CADENA);}
 {letra}({letra}|{digito})*				{yylval.lex = strdup(yytext); 					return(ID);}
 [ \t]+                              	{}
-\n                                  	{linea_actual++;}
+\n                                  	{line++;}
 .                             			{printf("[Linea %d]: lexical error, no se reconoce %s\n", yylineno, yytext);}
 
 %%

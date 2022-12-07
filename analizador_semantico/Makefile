@@ -8,7 +8,7 @@ MAINSRC = ./Robert.txt
 
 .PHONY: all
 
-all: clean $(BIN)/semantico run
+all: clean $(BIN)/semantico
 
 $(BIN)/semantico: $(OBJ)/main.o $(OBJ)/y.tab.o $(OBJ)/semantico.o
 		gcc -o $(BIN)/semantico $(OBJ)/main.o $(OBJ)/y.tab.o $(OBJ)/semantico.o
