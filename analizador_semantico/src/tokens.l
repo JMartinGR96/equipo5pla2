@@ -39,14 +39,14 @@ digito  [0-9]
 ";"             						{yylval.lex = strdup(yytext); 					return(PYC);}
 ","             						{yylval.lex = strdup(yytext); 					return(COMA);}
 
-"++"            						{yylval.lex = strdup(yytext); 					return (MASMAS);}
+"++"            						{yylval.lex = strdup(yytext); 					return(MASMAS);}
 "--"									{yylval.lex = strdup(yytext); 					return(MENOSMENOS);}
 "@"             						{yylval.lex = strdup(yytext); 					return(ARROBA);}
 "@@"									{yylval.lex = strdup(yytext); 					return(ARRARR);}
 "="             						{yylval.lex = strdup(yytext); 					return(OP_ASIGNACION);}
 "/" 		    						{yylval.lex = strdup(yytext); yylval.attr = 0;	return(OP_MUL);}
 "%"             						{yylval.lex = strdup(yytext); yylval.attr = 1;	return(OP_MUL);}
-"*"             						{yylval.lex = strdup(yytext); 					return(ASTERISCO);}
+"*"             						{yylval.lex = strdup(yytext); yylval.attr = 2;	return(OP_MUL);}
 "<" 									{yylval.lex = strdup(yytext); yylval.attr = 0; 	return(OP_REL);}
 "<="									{yylval.lex = strdup(yytext); yylval.attr = 1; 	return(OP_REL);}
 ">="									{yylval.lex = strdup(yytext); yylval.attr = 2; 	return(OP_REL);}

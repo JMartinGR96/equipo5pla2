@@ -193,6 +193,12 @@ void updateCurrentFunction(int lastFunc);
 int TS_FindById(attrs e);
 
 /**
+ * @brief Busca una entrada en la TS de una funcion por su identificador o nombre
+ * @return Índice de la entrada encontrada, -1 en caso de no encontrarla
+ */
+int TS_FindFunctionById(attrs e);
+
+/**
  * @brief Busca una entrada en la TS de una función por su identificador o nombre
  * @return Índice de la entrada encontrada, -1 en caso de no encontrarla
  */
@@ -232,6 +238,12 @@ void TS_CheckReturn(attrs expr, attrs *res);
  * @param WIP
  */
 void TS_GetById(attrs id, attrs *res);
+
+/**
+ * @brief Devuelve en res la funcion en la tabla de símbolos TS del identificador id si lo encuentra definido
+ * @param WIP
+ */
+void TS_GetByIdFunction(attrs id, attrs *res);
 
 /**
  * @brief Devuelve en res la variable en la tabla de símbolos TS del identificador id si lo encuentra definido
@@ -279,6 +291,7 @@ void Check_OpUnaryQuest(attrs op, attrs expr, attrs *res);
 void Check_IncrementDecrement(attrs op, attrs expr, attrs *res);
 void Check_PlusMinusBinary(attrs expr1, attrs op, attrs expr2, attrs *res);
 void Check_PlusMinus(attrs op, attrs expr, attrs *res);
+void Check_OpBinaryMulList(attrs expr1, attrs op, attrs expr2, attrs *res);
 void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res);
 void Check_OpBinaryAndOr(attrs expr1, attrs op, attrs expr2, attrs *res);
 void Check_OpBinaryRel(attrs expr1, attrs op, attrs expr2, attrs *res);

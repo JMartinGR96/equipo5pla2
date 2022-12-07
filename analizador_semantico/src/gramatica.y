@@ -42,14 +42,13 @@
 %token SENT_LIST
 %token DOLAR
 %token CADENA
-%token ASTERISCO
 %token ARRARR
 %left OP_OR_LOG
 %left OP_AND_LOG
 %left OP_EQ_NEQ
 %left OP_REL
 %left MAS_MENOS MENOSMENOS MASMAS ARRARR
-%left OP_MUL ASTERISCO OP_LIST_MUL
+%left OP_MUL OP_LIST_MUL
 %right NEGACION OP_LIST_UN OP_AND_LIST
 %left ARROBA
 
@@ -126,22 +125,23 @@ sentencia                   : bloque
 sentencia_asignacion        : ID OP_ASIGNACION expresion PYC { Check_Assign($1, $3); }
                             | error;
 
-sentencia_if                : SI PARIZQ expresion PARDER THEN sentencia { Check_Boolean($3); }
-                            | SI PARIZQ expresion PARDER THEN sentencia ELSE sentencia { Check_Boolean($3); }
+sentencia_if                : SI PARIZQ expresion PARDER THEN sentencia { Check_Boolean($3);}
+                            | SI PARIZQ expresion PARDER THEN sentencia ELSE sentencia { Check_Boolean($3);}
                               ;
 
 asignacion_for_pascal       : ID OP_ASIGNACION expresion { Check_Assign($1, $3); }
                             | DECLAR ID OP_ASIGNACION expresion { Check_Assign($2, $4); }
                             | error ;
 
-sentencia_for_pascal        : FOR asignacion_for_pascal TO valor DO sentencia { Check_Int($4); }
+sentencia_for_pascal        : FOR asignacion_for_pascal TO valor DO sentencia { printf("%s",tDataToString($4.type));Check_Int($4); }
                               ;
 
 valor                       : CONST_INT { $$.type = INT; }
-                            | ID { $$.type = $1.type; }
+                            | ID { TS_GetById($1,&$$); }
                               ;
 
-sentencia_while             : MIENTRAS PARIZQ expresion PARDER sentencia ;
+sentencia_while             : MIENTRAS PARIZQ expresion PARDER sentencia { Check_Boolean($3); }
+                              ;
 
 sentencia_entrada           : METERDATOS lista_variables PYC ;
 
@@ -162,28 +162,26 @@ sentencia_return            : RETURN expresion { TS_CheckReturn($2, &$$); }
 
 expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nDim = $2.nDim; }
                             | MASMAS expresion { Check_IncrementDecrement($1, $2, &$$); }
-                            | MENOSMENOS expresion
+                            | MENOSMENOS expresion { Check_IncrementDecrement($1, $2, &$$); }
                             | expresion MASMAS { Check_IncrementDecrement($2, $1, &$$); }
-                            | expresion MENOSMENOS
-                            | ASTERISCO expresion %prec NEGACION
-                            | OP_LIST_UN expresion
-                            | MAS_MENOS expresion %prec NEGACION
-                            | NEGACION expresion
-                            | OP_AND_LIST expresion
-                            | expresion ARRARR expresion
-                            | expresion MAS_MENOS expresion
-                            | expresion OP_LIST_MUL expresion
-                            | expresion OP_OR_LOG expresion
-                            | expresion OP_AND_LOG expresion
-                            | expresion OP_EQ_NEQ expresion
+                            | expresion MENOSMENOS { Check_IncrementDecrement($2, $1, &$$); }
+                            | OP_LIST_UN expresion { Check_OpUnaryCount($1, $2, &$$); }
+                            | MAS_MENOS expresion %prec NEGACION { Check_PlusMinus($1, $2, &$$); }
+                            | NEGACION expresion {Check_OpUnaryNeg($1, $2, &$$); }
+                            | OP_AND_LIST expresion // Pa que cojones se usa????
+                            | expresion ARRARR expresion {Check_At($1,$2,$3,&$$);}
+                            | expresion MAS_MENOS expresion { Check_PlusMinusBinary($1, $2, $3, &$$); }
+                            | expresion OP_LIST_MUL expresion {Check_OpBinaryMulList($1, $2, $3, &$$)}
+                            | expresion OP_OR_LOG expresion { Check_OpBinaryAndOr($1, $2, $3, &$$); }
+                            | expresion OP_AND_LOG expresion { Check_OpBinaryAndOr($1, $2, $3, &$$); }
+                            | expresion OP_EQ_NEQ expresion { Check_OpBinaryRel($1, $2, $3, &$$); }
                             | expresion OP_REL expresion { Check_OpBinaryRel($1, $2, $3, &$$); }
-                            | expresion ASTERISCO expresion
-                            | expresion OP_MUL expresion
-                            | expresion MENOSMENOS expresion
-                            | expresion MASMAS expresion ARROBA expresion
+                            | expresion OP_MUL expresion {Check_OpBinaryMul($1, $2, $3, &$$)}
+                            | expresion MENOSMENOS expresion {Check_MinusMinus($1,$2,$3,&$$);}
+                            | expresion MASMAS expresion ARROBA expresion {Check_ListTernary($1, $2, $3, $4, $5, &$$); }
                             | ID { $$.type = TS_GetType($1); $$.nDim = TS_GetNDim($1); decVar = 0; }
                             | constante { $$.type = $1.type; $$.nDim = $1.nDim; }
-                            | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1; }                   
+                            | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1;}                   
                             | agregado { $$.type = $1.type; $$.nDim = $1.nDim; }
                             
 
@@ -218,7 +216,8 @@ constante_lista_char        : constante_lista_char COMA CONST_CHAR
 agregado                    : CORIZQ constante_lista CORDER { $$.type = $2.type; }
                               ;
 
-funcion                     : ID  PARIZQ lista_expresiones_o_cadena PARDER ;
+funcion                     : ID PARIZQ lista_expresiones_o_cadena PARDER {TS_GetByIdFunction($1, &$$); }
+                              ;
 
 %%
 

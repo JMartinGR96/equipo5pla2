@@ -9,6 +9,8 @@ Robert
         list of float pf, pf2 ;
         list of char pc, pc2 ;
         list of bool pl ;
+        list of int id;
+        int id2;
     end_var
 
     int funcionA (int a1,float a2, char a3)
@@ -44,7 +46,9 @@ Robert
 
     float funcionD (float d1)
     {
+
         begin_var
+        char d1 ;
         char dato ;
         int valor ;
         end_var
@@ -75,6 +79,11 @@ Robert
         return d1 ;
     }
 
+    bool functionE (int a, int b)
+    {
+        return a > b;
+    }
+
     id = (5*id)++;
     id = id ++ id2 @ (5+4);
     pl>>;
@@ -82,5 +91,7 @@ Robert
     pe = [1,2,3];
 
     for ve = 3 to pl do {}
-    ve = pl++;
+    ve = ve++;
+
+    while(functionE(pe,pl)) {}
 }

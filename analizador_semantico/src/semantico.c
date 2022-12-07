@@ -186,6 +186,26 @@ int TS_FindById(attrs e) {
   return -1;
 }
 
+int TS_FindFunctionById(attrs e) {
+  int i = TOS - 1;    
+
+  if (TOS == 0)
+    return -1;
+  
+  //print_TS();
+  
+  while (i > 0 /* && ts[i].entry != MARK */) {
+    if (ts[i].entry == FUNCTION && strcmp(e.lex, ts[i].lex) == 0) {
+      //printf("ATRIBUTO FINDBYID. lex=%s, type=%d, entry=%d\n", ts[i].lex, ts[i].type, ts[i].entry);
+      return i;
+    }
+    i--;
+  }
+
+  //printf("Linea %d] Identifier not declared: %s\n", line, e.lex);
+  return -1;  
+}
+
 int TS_FindByName(attrs e) {
   int i = TOS - 1;    
 
@@ -344,6 +364,17 @@ void TS_CheckReturn(attrs expr, attrs *res) {
 
 void TS_GetById(attrs id, attrs *res) {
   int index = TS_FindById(id);
+  if(index == -1) {   // No es ninguna variable de la TS
+    //if (TS[index].entry != FUNCTION)
+    printf("[Linea %d] Search error. Id not found: %s\n", line, id.lex);
+  } else {
+    res->lex  = strdup(ts[index].lex);
+    res->type = ts[index].type;
+  }
+}
+
+void TS_GetByIdFunction(attrs id, attrs *res) {
+  int index = TS_FindFunctionById(id);
   if(index == -1) {   // No es ninguna variable de la TS
     //if (TS[index].entry != FUNCTION)
     printf("[Linea %d] Search error. Id not found: %s\n", line, id.lex);
@@ -577,7 +608,7 @@ void Check_PlusMinus(attrs op, attrs expr, attrs *res) {
 }
 
 void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res) {
-  if (op.attr == 0) {  // %
+  if (op.attr == 1) {  // %
     // int % int
     if (expr1.type == INT && expr2.type == INT) {
       res->type = INT;
@@ -590,21 +621,8 @@ void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res) {
       printf("[%sLinea %d] Binary operator %s expects expressions of types [INT]%s[INT] or [LIST]%s[INT], but got [%s]%s[%s]\n",
         DEBUG ? "{605}" : "",line, op.lex, op.lex, op.lex, tDataToString(expr1.type), op.lex, tDataToString(expr2.type));
     }
-  } else if (op.attr == 3) {  // **
-    if (isList(expr1) && isList(expr2)) {
-      // both must be of the same type
-      if (expr1.type == expr2.type) {
-        res->type = expr1.type;
-        res->nDim = expr1.nDim + expr2.nDim;
-      } else {
-        printf("[%sLinea %d] Binay operator ** expects expressions of types [LIST OF x]**[LIST OF x] (lists of same type), but got [%s]**[%s]\n",
-          DEBUG ? "{615}" : "",line, tDataToString(expr1.type), tDataToString(expr2.type));
-      }
-    } else {
-      printf("[%sLinea %d] Binary operator ** expects expressions of types [LIST]**[LIST], but got [%s]**[%s]\n",
-        DEBUG ? "{619}" : "",line, tDataToString(expr1.type), tDataToString(expr2.type));
-    }
-  } else {  // * /
+  } 
+  else {  // * /
     // WIP sólo permitimos producto/división de enteros/flotantes (¿de char/bool?)
     if (!(expr1.type == INT || expr1.type == LIST_INT || expr1.type == FLOAT || expr1.type == LIST_FLOAT) ||
       !(expr2.type == INT || expr2.type == LIST_INT || expr2.type == FLOAT || expr2.type == LIST_FLOAT)) {
@@ -641,6 +659,22 @@ void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res) {
           DEBUG ? "{655}" : "",line, op.lex, op.lex, tDataToString(expr1.type), op.lex, tDataToString(expr2.type));
       }
     }
+  }
+}
+
+void Check_OpBinaryMulList(attrs expr1, attrs op, attrs expr2, attrs *res) {
+  if (isList(expr1) && isList(expr2)) {
+    // both must be of the same type
+    if (expr1.type == expr2.type) {
+      res->type = expr1.type;
+      res->nDim = expr1.nDim + expr2.nDim;
+    } else {
+      printf("[%sLinea %d] Binay operator ** expects expressions of types [LIST OF x]**[LIST OF x] (lists of same type), but got [%s]**[%s]\n",
+        DEBUG ? "{615}" : "",line, tDataToString(expr1.type), tDataToString(expr2.type));
+    }
+  } else {
+    printf("[%sLinea %d] Binary operator ** expects expressions of types [LIST]**[LIST], but got [%s]**[%s]\n",
+      DEBUG ? "{619}" : "",line, tDataToString(expr1.type), tDataToString(expr2.type));
   }
 }
 
