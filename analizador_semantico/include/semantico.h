@@ -277,44 +277,23 @@ void print_TS();
 /**
  * @brief Imprime un atributo
  */
-void print_Attrs(attrs e, char *msg);
+void imprimirAtributos(attrs e, char *msg);
 
-void Check_Assign(attrs e1, attrs e2);
-void Check_Boolean(attrs e);
-void Check_Int(attrs e);
-void Check_IncrementDecrement(attrs op, attrs expr, attrs *res);
-void Check_OpUnaryCount(attrs op, attrs expr, attrs *res);
-void Check_PlusMinus(attrs op, attrs expr, attrs *res);
-void Check_OpUnaryNeg(attrs op, attrs expr, attrs *res);
-void Check_At(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_PlusMinusBinary(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryMulList(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryAndOr(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryRel(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_MinusMinus(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_ListTernary(attrs expr1, attrs op1, attrs expr2, attrs op2, attrs expr3, attrs *res);
-void Check_FunctionCall(attrs id);
-int  Check_EqualSize(attrs e1, attrs e2);
-void VarList_Id(attrs id, attrs *res);
-
-/*int Check_EqualSize(attrs e1, attrs e2);
-void Check_Assign(attrs e1, attrs e2); esta
-void Check_Boolean(attrs e); esta
-void Check_Int(attrs e); esta
-void Check_ListSentence(attrs expr);
-void Check_OpUnaryNeg(attrs op, attrs expr, attrs *res);
-void Check_OpUnaryCount(attrs op, attrs expr, attrs *res);
-void Check_OpUnaryQuest(attrs op, attrs expr, attrs *res);
-void Check_IncrementDecrement(attrs op, attrs expr, attrs *res);
-void Check_PlusMinusBinary(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_PlusMinus(attrs op, attrs expr, attrs *res);
-void Check_OpBinaryMulList(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryAndOr(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryRel(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_OpBinaryEq(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_At(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_MinusMinus(attrs expr1, attrs op, attrs expr2, attrs *res);
-void Check_ListTernary(attrs expr1, attrs op1, attrs expr2, attrs op2, attrs expr3, attrs *res);
-void Check_FunctionCall(attrs id);*/
+void comprobarAsignacion(attrs e1, attrs e2);
+void comprobarBooleano(attrs e);
+void comprobarEntero(attrs e);
+void comprobarIncrementoDecremento(attrs op, attrs expr, attrs *res);
+void comprobarNumeroElementosLista(attrs op, attrs expr, attrs *res);
+void comprobarMasMenos(attrs op, attrs expr, attrs *res);
+void comprobarNegacionConBooleano(attrs op, attrs expr, attrs *res);
+void comprobarPosicionLista(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobarMasMenosBinario(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobaOperadorBinarioConcatenarListas(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobaOperadorBinarioMultiplicacion(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobarOperadorBinarioAndOr(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobarOperadorBinarioRelacion(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobarMenosMenos(attrs expr1, attrs op, attrs expr2, attrs *res);
+void comprobarOperadorTernarioLista(attrs expr1, attrs op1, attrs expr2, attrs op2, attrs expr3, attrs *res);
+void comprobarLlamadaAFuncion(attrs id);
+int  comprobarMismaDimension(attrs e1, attrs e2);
+void agregarNuevoID(attrs id, attrs *res);

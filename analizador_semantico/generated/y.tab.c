@@ -1632,13 +1632,13 @@ yyreduce:
 
   case 14:
 #line 79 "src/gramatica.y"
-    { (yyval).type = (yyvsp[(1) - (2)]).type; setType((yyvsp[(1) - (2)]));VarList_Id((yyvsp[(2) - (2)]), &(yyval));;}
+    { (yyval).type = (yyvsp[(1) - (2)]).type; setType((yyvsp[(1) - (2)]));agregarNuevoID((yyvsp[(2) - (2)]), &(yyval));;}
     break;
 
   case 19:
 #line 86 "src/gramatica.y"
     {
-                                VarList_Id((yyvsp[(3) - (3)]), &(yyval));
+                                agregarNuevoID((yyvsp[(3) - (3)]), &(yyval));
                               ;}
     break;
 
@@ -1659,32 +1659,32 @@ yyreduce:
 
   case 40:
 #line 117 "src/gramatica.y"
-    { Check_Assign((yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); ;}
+    { comprobarAsignacion((yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); ;}
     break;
 
   case 42:
 #line 120 "src/gramatica.y"
-    { Check_Boolean((yyvsp[(3) - (6)]));;}
+    { comprobarBooleano((yyvsp[(3) - (6)]));;}
     break;
 
   case 43:
 #line 121 "src/gramatica.y"
-    { Check_Boolean((yyvsp[(3) - (8)]));;}
+    { comprobarBooleano((yyvsp[(3) - (8)]));;}
     break;
 
   case 44:
 #line 124 "src/gramatica.y"
-    { Check_Assign((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); Check_Int((yyvsp[(3) - (3)]));;}
+    { comprobarAsignacion((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); comprobarEntero((yyvsp[(3) - (3)]));;}
     break;
 
   case 45:
 #line 125 "src/gramatica.y"
-    { Check_Assign((yyvsp[(2) - (4)]), (yyvsp[(4) - (4)])); Check_Int((yyvsp[(3) - (4)])); ;}
+    { comprobarAsignacion((yyvsp[(2) - (4)]), (yyvsp[(4) - (4)])); comprobarEntero((yyvsp[(3) - (4)])); ;}
     break;
 
   case 47:
 #line 128 "src/gramatica.y"
-    { Check_Int((yyvsp[(4) - (6)])); ;}
+    { comprobarEntero((yyvsp[(4) - (6)])); ;}
     break;
 
   case 48:
@@ -1699,17 +1699,17 @@ yyreduce:
 
   case 50:
 #line 135 "src/gramatica.y"
-    { Check_Boolean((yyvsp[(3) - (5)])); ;}
+    { comprobarBooleano((yyvsp[(3) - (5)])); ;}
     break;
 
   case 52:
 #line 140 "src/gramatica.y"
-    { VarList_Id((yyvsp[(3) - (3)]), &(yyval)); ;}
+    { agregarNuevoID((yyvsp[(3) - (3)]), &(yyval)); ;}
     break;
 
   case 53:
 #line 141 "src/gramatica.y"
-    { VarList_Id((yyvsp[(1) - (1)]), &(yyval)); ;}
+    { agregarNuevoID((yyvsp[(1) - (1)]), &(yyval)); ;}
     break;
 
   case 56:
@@ -1734,87 +1734,87 @@ yyreduce:
 
   case 63:
 #line 157 "src/gramatica.y"
-    { Check_IncrementDecrement((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
+    { comprobarIncrementoDecremento((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
     break;
 
   case 64:
 #line 158 "src/gramatica.y"
-    { Check_IncrementDecrement((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
+    { comprobarIncrementoDecremento((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
     break;
 
   case 65:
 #line 159 "src/gramatica.y"
-    { Check_IncrementDecrement((yyvsp[(2) - (2)]), (yyvsp[(1) - (2)]), &(yyval)); ;}
+    { comprobarIncrementoDecremento((yyvsp[(2) - (2)]), (yyvsp[(1) - (2)]), &(yyval)); ;}
     break;
 
   case 66:
 #line 160 "src/gramatica.y"
-    { Check_IncrementDecrement((yyvsp[(2) - (2)]), (yyvsp[(1) - (2)]), &(yyval)); ;}
+    { comprobarIncrementoDecremento((yyvsp[(2) - (2)]), (yyvsp[(1) - (2)]), &(yyval)); ;}
     break;
 
   case 67:
 #line 161 "src/gramatica.y"
-    { Check_OpUnaryCount((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
+    { comprobarNumeroElementosLista((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
     break;
 
   case 68:
 #line 162 "src/gramatica.y"
-    { Check_PlusMinus((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
+    { comprobarMasMenos((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
     break;
 
   case 69:
 #line 163 "src/gramatica.y"
-    {Check_OpUnaryNeg((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
+    {comprobarNegacionConBooleano((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), &(yyval)); ;}
     break;
 
   case 71:
 #line 165 "src/gramatica.y"
-    {Check_At((yyvsp[(1) - (3)]),(yyvsp[(2) - (3)]),(yyvsp[(3) - (3)]),&(yyval));;}
+    {comprobarPosicionLista((yyvsp[(1) - (3)]),(yyvsp[(2) - (3)]),(yyvsp[(3) - (3)]),&(yyval));;}
     break;
 
   case 72:
 #line 166 "src/gramatica.y"
-    { Check_PlusMinusBinary((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
+    { comprobarMasMenosBinario((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
     break;
 
   case 73:
 #line 167 "src/gramatica.y"
-    {Check_OpBinaryMulList((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval));}
+    {comprobaOperadorBinarioConcatenarListas((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval));}
     break;
 
   case 74:
 #line 168 "src/gramatica.y"
-    { Check_OpBinaryAndOr((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
+    { comprobarOperadorBinarioAndOr((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
     break;
 
   case 75:
 #line 169 "src/gramatica.y"
-    { Check_OpBinaryAndOr((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
+    { comprobarOperadorBinarioAndOr((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
     break;
 
   case 76:
 #line 170 "src/gramatica.y"
-    { Check_OpBinaryRel((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
+    { comprobarOperadorBinarioRelacion((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
     break;
 
   case 77:
 #line 171 "src/gramatica.y"
-    { Check_OpBinaryRel((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
+    { comprobarOperadorBinarioRelacion((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval)); ;}
     break;
 
   case 78:
 #line 172 "src/gramatica.y"
-    {Check_OpBinaryMul((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval));}
+    {comprobaOperadorBinarioMultiplicacion((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)]), &(yyval));}
     break;
 
   case 79:
 #line 173 "src/gramatica.y"
-    {Check_MinusMinus((yyvsp[(1) - (3)]),(yyvsp[(2) - (3)]),(yyvsp[(3) - (3)]),&(yyval));;}
+    {comprobarMenosMenos((yyvsp[(1) - (3)]),(yyvsp[(2) - (3)]),(yyvsp[(3) - (3)]),&(yyval));;}
     break;
 
   case 80:
 #line 174 "src/gramatica.y"
-    {Check_ListTernary((yyvsp[(1) - (5)]), (yyvsp[(2) - (5)]), (yyvsp[(3) - (5)]), (yyvsp[(4) - (5)]), (yyvsp[(5) - (5)]), &(yyval)); ;}
+    {comprobarOperadorTernarioLista((yyvsp[(1) - (5)]), (yyvsp[(2) - (5)]), (yyvsp[(3) - (5)]), (yyvsp[(4) - (5)]), (yyvsp[(5) - (5)]), &(yyval)); ;}
     break;
 
   case 81:
@@ -1889,7 +1889,7 @@ yyreduce:
 
   case 105:
 #line 212 "src/gramatica.y"
-    { Check_FunctionCall((yyvsp[(1) - (2)])); ;}
+    { comprobarLlamadaAFuncion((yyvsp[(1) - (2)])); ;}
     break;
 
   case 106:

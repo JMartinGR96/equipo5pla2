@@ -349,7 +349,7 @@ void TS_CheckReturn(attrs expr, attrs *res) {
     attrs tmp;
     tmp.nDim = ts[index].nDim;
 
-    if (!Check_EqualSize(expr, tmp)) {
+    if (!comprobarMismaDimension(expr, tmp)) {
       printf("[Linea %d] Return expression not same size as return function\n", line);
     }
 
@@ -469,7 +469,7 @@ void print_TS() {
   fgets (strvar, 100, stdin);
 }
 
-void print_Attrs(attrs e, char *msg) {
+void imprimirAtributos(attrs e, char *msg) {
   char *t;
 
     if (e.type == 0) { t = "NONE"; }
@@ -490,24 +490,24 @@ void print_Attrs(attrs e, char *msg) {
   printf("------------------------------\n");
 }
 
-int Check_EqualSize(attrs e1, attrs e2) {
+int comprobarMismaDimension(attrs e1, attrs e2) {
   return e1.nDim == e2.nDim;
 }
 
-void Check_Assign(attrs e1, attrs e2) {
+void comprobarAsignacion(attrs e1, attrs e2) {
   int type = TS_GetType(e1);
   if (type != e2.type && e2.type != NONE && type > 0)
     printf("[%sLinea %d] Assigning expression of type %s to %s, of type %s\n", DEBUG ? "{481}" : "",line, tDataToString(e2.type), e1.lex, tDataToString(TS_GetType(e1)));
-  /* WIP unnecessary -> if (!Check_EqualSize(e1, e2))
+  /* WIP unnecessary -> if (!comprobarMismaDimension(e1, e2))
     printf("Linea %d] Expression and %s are not the same size\n", line, e2.lex); */
 }
 
-void Check_Boolean(attrs e) {
+void comprobarBooleano(attrs e) {
   if (e.type != BOOLEAN)
     printf("[%sLinea %d] Expected expression of type BOOLEAN, but got type %s\n", DEBUG ? "{489}" : "",line, tDataToString(e.type));
 }
 
-void Check_Int(attrs e) {
+void comprobarEntero(attrs e) {
   if (e.type != INT)
     printf("[%sLinea %d] Expected expression of type INT, but got type %s\n", DEBUG ? "{494}" : "",line, tDataToString(e.type));
 }
@@ -518,7 +518,7 @@ void Check_ListSentence(attrs id) {
     printf("[%sLinea %d] %s is not of type LIST, but type %s\n", DEBUG ? "{499}" : "",line, id.lex, tDataToString(type));
 }
 
-void Check_OpUnaryNeg(attrs op, attrs expr, attrs *res) {
+void comprobarNegacionConBooleano(attrs op, attrs expr, attrs *res) {
   if (expr.type != BOOLEAN) {
     printf("[%sLinea %d] Unary operator ! expects expression of type ![BOOLEAN], but got type ![%s]\n",
       DEBUG ? "{505}" : "",line, tDataToString(expr.type));
@@ -528,7 +528,7 @@ void Check_OpUnaryNeg(attrs op, attrs expr, attrs *res) {
   res->nDim = 0;
 }
 
-void Check_OpUnaryCount(attrs op, attrs expr, attrs *res) {
+void comprobarNumeroElementosLista(attrs op, attrs expr, attrs *res) {
   if (!isList(expr)) {
     printf("[%sLinea %d] Unary operator # expects expression of type #[LIST], but got type #[%s]\n",
       DEBUG ? "{515}" : "",line, tDataToString(expr.type));
@@ -548,7 +548,7 @@ void Check_OpUnaryQuest(attrs op, attrs expr, attrs *res) {
   res->nDim = 0;
 }
 
-void Check_IncrementDecrement(attrs op, attrs expr, attrs *res) {
+void comprobarIncrementoDecremento(attrs op, attrs expr, attrs *res) {
   if (!(expr.type == INT || expr.type == FLOAT)) {
     printf("[%sLinea %d] Unary operator %s expects expression of type %s[INT|FLOAT], but got type %s[%s]\n",
       DEBUG ? "{535}" : "",line, op.lex, op.lex, op.lex, tDataToString(expr.type));
@@ -557,7 +557,7 @@ void Check_IncrementDecrement(attrs op, attrs expr, attrs *res) {
   res->nDim = expr.nDim;
 }
 
-void Check_PlusMinusBinary(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobarMasMenosBinario(attrs expr1, attrs op, attrs expr2, attrs *res) {
   // WIP sólo permitimos la suma y resta de enteros/flotantes (¿suma/resta de char/bool?)
   if (!(expr1.type == INT || expr1.type == LIST_INT || expr1.type == FLOAT || expr1.type == LIST_FLOAT) ||
     !(expr2.type == INT || expr2.type == LIST_INT || expr2.type == FLOAT || expr2.type == LIST_FLOAT)) {
@@ -597,7 +597,7 @@ void Check_PlusMinusBinary(attrs expr1, attrs op, attrs expr2, attrs *res) {
   }
 }
 
-void Check_PlusMinus(attrs op, attrs expr, attrs *res) {
+void comprobarMasMenos(attrs op, attrs expr, attrs *res) {
   if (!(expr.type == INT || expr.type == FLOAT)) {
     printf("[%sLinea %d] Unary operator %s expects expression of type %s[INT|FLOAT], but got type %s[%s]\n",
       DEBUG ? "{584}" : "",line, op.lex, op.lex, op.lex, tDataToString(expr.type));
@@ -607,7 +607,7 @@ void Check_PlusMinus(attrs op, attrs expr, attrs *res) {
   res->nDim = 0;
 }
 
-void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobaOperadorBinarioMultiplicacion(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if (op.attr == 1) {  // %
     // int % int
     if (expr1.type == INT && expr2.type == INT) {
@@ -662,7 +662,7 @@ void Check_OpBinaryMul(attrs expr1, attrs op, attrs expr2, attrs *res) {
   }
 }
 
-void Check_OpBinaryMulList(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobaOperadorBinarioConcatenarListas(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if (isList(expr1) && isList(expr2)) {
     // both must be of the same type
     if (expr1.type == expr2.type) {
@@ -678,7 +678,7 @@ void Check_OpBinaryMulList(attrs expr1, attrs op, attrs expr2, attrs *res) {
   }
 }
 
-void Check_OpBinaryAndOr(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobarOperadorBinarioAndOr(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if (expr1.type == BOOLEAN && expr2.type == BOOLEAN) {
     res->type = BOOLEAN;
     res->nDim = 0;
@@ -688,7 +688,7 @@ void Check_OpBinaryAndOr(attrs expr1, attrs op, attrs expr2, attrs *res) {
     DEBUG ? "{668}" : "",line, op.lex, op.lex, tDataToString(expr1.type), op.lex, tDataToString(expr2.type));
 }
 
-void Check_OpBinaryRel(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobarOperadorBinarioRelacion(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if ((expr1.type == INT || expr1.type == FLOAT || expr1.type == CHAR) && (expr2.type == INT || expr2.type == FLOAT || expr2.type == CHAR)) {
     res->type = BOOLEAN;
     res->nDim = 0;
@@ -714,7 +714,7 @@ void Check_OpBinaryEq(attrs expr1, attrs op, attrs expr2, attrs *res) {
 }
 
 // WIP si hacemos IDENTIFIER AT expresion, debemos de hacer TS_GetById
-void Check_At(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobarPosicionLista(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if (isList(expr1) && expr2.type == INT) {
     res->type = listToType(expr1.type);
     res->nDim = 0;
@@ -726,7 +726,7 @@ void Check_At(attrs expr1, attrs op, attrs expr2, attrs *res) {
   res->nDim = 0;
 }
 
-void Check_MinusMinus(attrs expr1, attrs op, attrs expr2, attrs *res) {
+void comprobarMenosMenos(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if (isList(expr1) && expr2.type == INT) {
     res->type = expr1.type;
     res->nDim = expr1.nDim - 1;
@@ -736,7 +736,7 @@ void Check_MinusMinus(attrs expr1, attrs op, attrs expr2, attrs *res) {
   }
 }
 
-void Check_ListTernary(attrs expr1, attrs op1, attrs expr2, attrs op2, attrs expr3, attrs *res) {
+void comprobarOperadorTernarioLista(attrs expr1, attrs op1, attrs expr2, attrs op2, attrs expr3, attrs *res) {
   if (!isList(expr1) || listToType(expr1.type) != expr2.type || expr3.type != INT) {
     printf("[%sLinea %d] Ternary operator ++ @ expects expressions of types [LIST OF x]++[x]@[INT], but got types [%s]++[%s]@[%s]\n",
       DEBUG ? "{722}" : "",line, tDataToString(expr1.type), tDataToString(expr2.type), tDataToString(expr3.type));
@@ -746,14 +746,14 @@ void Check_ListTernary(attrs expr1, attrs op1, attrs expr2, attrs op2, attrs exp
   res->nDim = expr1.nDim + 1;
 }
 
-void Check_FunctionCall(attrs id) {
+void comprobarLlamadaAFuncion(attrs id) {
   currentFunction = TS_FindByName(id);
 
   if (currentFunction == -1)
     printf("[%sLinea %d] Function with name %s not found\n", DEBUG ? "{734}" : "",line, id.lex);
 }
 
-void VarList_Id(attrs id, attrs *res) {
+void agregarNuevoID(attrs id, attrs *res) {
   if (decVar == 1)
     TS_AddId(id);
   else
