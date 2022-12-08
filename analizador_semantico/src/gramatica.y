@@ -29,7 +29,6 @@
 %token FINBLOQUE
 %token PYC
 %token TO 
-%token THEN 
 %token CORIZQ
 %token CORDER
 %token COMA
@@ -37,7 +36,6 @@
 %token RETURN
 %token INI_DECLAR_VAR
 %token FIN_DECLAR_VAR
-%token ELSE
 %token DO
 %token SENT_LIST
 %token DOLAR
@@ -51,6 +49,7 @@
 %left OP_MUL OP_LIST_MUL
 %right NEGACION OP_LIST_UN OP_AND_LIST
 %left ARROBA
+%right THEN ELSE
 
 %%
 
@@ -77,32 +76,25 @@ declar_subprog              : cabecera_subprograma { esFunc = 1; }
 variables_locales           : variables_locales cuerpo_declar_variables 
                             | cuerpo_declar_variables ;
 
-cuerpo_declar_variables     : DECLAR ID
-                              {
-                                $$.type = $1.type;
-                                setType($1);
-                                VarList_Id($2, &$$);
-                              }
-                              asig_valor mas_variables PYC 
+cuerpo_declar_variables     : DECLAR ID { $$.type = $1.type; setType($1);VarList_Id($2, &$$);} 
+                              mas_variables PYC
                             | DECLAR ID error
                             | DECLAR error
                             | error ;
 
-mas_variables               : mas_variables COMA ID asig_valor 
+mas_variables               : mas_variables COMA ID 
                               {
                                 VarList_Id($3, &$$);
                               }
                             | ;
 
-asig_valor                  : OP_ASIGNACION expresion 
-                            | ;
-
 cabecera_subprograma        : DECLAR ID { setType($1); decParam = 1; TS_AddFunction($2); }
                               PARIZQ declaraciones_id PARDER { decParam = 0; $4.nDim = 0; }
-                            | error ;
+                              ;
 
-declaraciones_id            : declaraciones_id COMA param
-                            | param
+declaraciones_id            : declaraciones_id COMA param 
+                            | param 
+                            | declaraciones_id COMA error
                             | ;
 
 param                       : DECLAR ID { setType($1); TS_AddParam($2); }
@@ -129,11 +121,11 @@ sentencia_if                : SI PARIZQ expresion PARDER THEN sentencia { Check_
                             | SI PARIZQ expresion PARDER THEN sentencia ELSE sentencia { Check_Boolean($3);}
                               ;
 
-asignacion_for_pascal       : ID OP_ASIGNACION expresion { Check_Assign($1, $3); }
-                            | DECLAR ID OP_ASIGNACION expresion { Check_Assign($2, $4); }
+asignacion_for_pascal       : ID OP_ASIGNACION expresion { Check_Assign($1, $3); Check_Int($3);}
+                            | DECLAR ID OP_ASIGNACION expresion { Check_Assign($2, $4); Check_Int($3); }
                             | error ;
 
-sentencia_for_pascal        : FOR asignacion_for_pascal TO valor DO sentencia { printf("%s",tDataToString($4.type));Check_Int($4); }
+sentencia_for_pascal        : FOR asignacion_for_pascal TO valor DO sentencia { Check_Int($4); }
                               ;
 
 valor                       : CONST_INT { $$.type = INT; }
@@ -151,8 +143,9 @@ lista_variables             : lista_variables COMA ID { VarList_Id($3, &$$); }
 
 sentencia_salida            : SACARDATOS lista_expresiones_o_cadena PYC ;
 
-lista_expresiones_o_cadena  : lista_expresiones_o_cadena COMA expr_cad 
-                            | expr_cad ;
+lista_expresiones_o_cadena  : lista_expresiones_o_cadena COMA expr_cad { TS_CheckParam($3); }
+                            | expr_cad {checkParams = 0; TS_CheckParam($1); }
+                              ; 
 
 expr_cad                    : expresion 
                             | CADENA ;
@@ -189,13 +182,13 @@ sentencia_adelante_atras    : ID SENT_LIST PYC ;
 
 sentencia_principio_lista   : DOLAR ID PYC ;
 
-constante                   : constante_base
-                            | constante_lista ;
-
-constante_base              : CONST_INT { $$.type = INT; }
+constante                   : CONST_INT { $$.type = INT; }
                             | CONST_FLOAT { $$.type = FLOAT; }
                             | CONST_BOOL { $$.type = BOOLEAN; }
                             | CONST_CHAR { $$.type = CHAR; }
+                              ;
+
+agregado                    : CORIZQ constante_lista CORDER { $$.type = $2.type; }
                               ;
 
 constante_lista             : constante_lista_int { $$.type = LIST_INT; $$.nDim = $1.nDim; }
@@ -213,11 +206,12 @@ constante_lista_bool        : constante_lista_bool COMA CONST_BOOL
 constante_lista_char        : constante_lista_char COMA CONST_CHAR
                             | CONST_CHAR ;
 
-agregado                    : CORIZQ constante_lista CORDER { $$.type = $2.type; }
+funcion                     : cabecera_funcion argumentos_funcion { $$.attr = $2.attr; $$.type = $2.type, $$.nDim = $2.nDim; }
                               ;
 
-funcion                     : ID PARIZQ lista_expresiones_o_cadena PARDER {TS_GetByIdFunction($1, &$$); }
-                              ;
+cabecera_funcion            : ID PARIZQ { Check_FunctionCall($1); }
+
+argumentos_funcion          : lista_expresiones_o_cadena PARDER {TS_FunctionCall(&$$);}
 
 %%
 

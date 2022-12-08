@@ -1,9 +1,10 @@
 Robert
 {
     begin_var
+        char abc;
         int ve, B,f,C;
         float vf,h,j, k, l;
-        char vc ;
+        char vc;
         bool vl ;
         list of int pe, pe2 ;
         list of float pf, pf2 ;
@@ -44,7 +45,7 @@ Robert
         }
     }
 
-    float funcionD (float d1)
+    float funcionD (float d1,)
     {
 
         begin_var
@@ -81,17 +82,24 @@ Robert
 
     bool functionE (int a, int b)
     {
+        begin_var
+            int g;
+        end_var
+        
         return a > b;
     }
-
+    
+    pe = pe2 ** pe2;
     id = (5*id)++;
     id = id ++ id2 @ (5+4);
     pl>>;
     asig = funcionD(hola);
     pe = [1,2,3];
 
-    for ve = 3 to pl do {}
+    for int ve = 5 to 10 do {}
     ve = ve++;
 
-    while(functionE(pe,pl)) {}
+    pl = [true,false];
+
+    while(functionE(ve,B)) {}
 }
