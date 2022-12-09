@@ -12,7 +12,7 @@ int      nParams         = 0;
 int      checkParams     = 0;
 int      checkFunction   = 0;
 int      currentFunction = -1;
-int       line_if = -1;
+int      line_if = -1;
 
 
 tData getListType(tData type) {
@@ -491,6 +491,10 @@ void imprimirAtributos(attrs e, char *msg) {
   printf("------------------------------\n");
 }
 
+int isNone(attrs e) {
+  return (e.type != BOOLEAN)?1:0;
+}
+
 int comprobarMismaDimension(attrs e1, attrs e2) {
   return e1.nDim == e2.nDim;
 }
@@ -512,9 +516,10 @@ void comprobarBooleano(attrs e) {
 void comprobarBooleano_if(attrs e) {
   if (e.type != BOOLEAN){
     int print = line;
-    if(line_if < line){
+    if(line_if < line && line_if != -1){
       print = line_if;
       printf("[%sLinea %d] Expected expression of type BOOLEAN, but got type %s\n", DEBUG ? "{489}" : "",print, tDataToString(e.type));
+      line_if = -1;
     }
   }
 }

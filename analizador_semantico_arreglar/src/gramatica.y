@@ -118,13 +118,12 @@ sentencia                   : bloque
 sentencia_asignacion        : ID OP_ASIGNACION expresion PYC { comprobarAsignacion($1, $3); }
                             | error;
 
-sentencia_if                : SI PARIZQ expresion PARDER { comprobarBooleano($3);} 
-                            | ;
+sentencia_if                : SI PARIZQ expresion_if PARDER THEN sentencia { comprobarBooleano_if($3);} 
+                            | SI PARIZQ expresion_if PARDER THEN sentencia ELSE sentencia { comprobarBooleano_if($3);}
+                              ;
 
-resto                       : THEN sentencia | THEN sentencia ELSE sentencia ;
-
-
-
+expresion_if                : expresion { line_if = line; $$.type = $1.type; }
+                              ;
 
 asignacion_for_pascal       : ID OP_ASIGNACION expresion { comprobarAsignacion($1, $3); comprobarEntero($3);}
                             | DECLAR ID OP_ASIGNACION expresion { comprobarAsignacion($2, $4); comprobarEntero($3); }
@@ -181,6 +180,7 @@ expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nD
                             | constante { $$.type = $1.type; $$.nDim = $1.nDim; }
                             | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1;}                   
                             | agregado { $$.type = $1.type; $$.nDim = $1.nDim; }
+                              ;
                             
 
 sentencia_adelante_atras    : ID SENT_LIST PYC ;
