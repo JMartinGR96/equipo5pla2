@@ -357,10 +357,10 @@ void TS_CheckReturn(attrs expr, attrs *res) {
     res->type = expr.type;
     res->nDim = expr.nDim;
     return;
-  } else {
+  }/* else {
     printf("[Linea %d] Result not declared into function\n", line);
     return;
-  }
+  }*/
 }
 
 void TS_GetById(attrs id, attrs *res) {
