@@ -5,8 +5,7 @@ Robert
         bool h,d;
     end_var
 
-    a = b + c + e - f;
+    h = (a+b-c > c-3) && !d;
 
 
-    j = a;
 }

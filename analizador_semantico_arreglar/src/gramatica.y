@@ -159,23 +159,23 @@ expr_cad                    : expresion
 sentencia_return            : RETURN expresion { TS_CheckReturn($2, &$$); }
                               PYC ;
 
-expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nDim = $2.nDim; }
-                            | MASMAS expresion { comprobarIncrementoDecremento($1, $2, &$$); }
-                            | MENOSMENOS expresion { comprobarIncrementoDecremento($1, $2, &$$); }
-                            | expresion MASMAS { comprobarIncrementoDecremento($2, $1, &$$); }
-                            | expresion MENOSMENOS { comprobarIncrementoDecremento($2, $1, &$$); }
+expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nDim = $2.nDim; $$.eval = $2.eval; $$.temp_asociado = $2.temp_asociado;}
+                            | MASMAS expresion { comprobarIncrementoDecremento($1, $2, &$$); evaluar_expresion_unaria($1, $2, &$$);}
+                            | MENOSMENOS expresion { comprobarIncrementoDecremento($1, $2, &$$); evaluar_expresion_unaria($1, $2, &$$);}
+                            | expresion MASMAS { comprobarIncrementoDecremento($2, $1, &$$); evaluar_expresion_unaria($2, $1, &$$);}
+                            | expresion MENOSMENOS { comprobarIncrementoDecremento($2, $1, &$$); evaluar_expresion_unaria($2, $1, &$$);}
                             | OP_LIST_UN expresion { comprobarNumeroElementosLista($1, $2, &$$); }
-                            | MAS_MENOS expresion %prec NEGACION { comprobarMasMenos($1, $2, &$$); }
-                            | NEGACION expresion {comprobarNegacionConBooleano($1, $2, &$$); }
+                            | MAS_MENOS expresion %prec NEGACION { comprobarMasMenos($1, $2, &$$); evaluar_expresion_unaria($1, $2, &$$);}
+                            | NEGACION expresion {comprobarNegacionConBooleano($1, $2, &$$); evaluar_expresion_unaria($1, $2, &$$);}
                             | OP_AND_LIST expresion // Pa que cojones se usa????
                             | expresion ARRARR expresion {comprobarPosicionLista($1,$2,$3,&$$);}
                             | expresion MAS_MENOS expresion { comprobarMasMenosBinario($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$); } 
                             | expresion OP_LIST_MUL expresion {comprobaOperadorBinarioConcatenarListas($1, $2, $3, &$$);}
-                            | expresion OP_OR_LOG expresion { comprobarOperadorBinarioAndOr($1, $2, $3, &$$); }
-                            | expresion OP_AND_LOG expresion { comprobarOperadorBinarioAndOr($1, $2, $3, &$$); }
-                            | expresion OP_EQ_NEQ expresion { comprobarOperadorBinarioRelacion($1, $2, $3, &$$); }
-                            | expresion OP_REL expresion { comprobarOperadorBinarioRelacion($1, $2, $3, &$$); }
-                            | expresion OP_MUL expresion {comprobaOperadorBinarioMultiplicacion($1, $2, $3, &$$); }
+                            | expresion OP_OR_LOG expresion { comprobarOperadorBinarioAndOr($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$);}
+                            | expresion OP_AND_LOG expresion { comprobarOperadorBinarioAndOr($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$);}
+                            | expresion OP_EQ_NEQ expresion { comprobarOperadorBinarioRelacion($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$);}
+                            | expresion OP_REL expresion { comprobarOperadorBinarioRelacion($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$);}
+                            | expresion OP_MUL expresion {comprobaOperadorBinarioMultiplicacion($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$);}
                             | expresion MENOSMENOS expresion {comprobarMenosMenos($1,$2,$3,&$$);}
                             | expresion MASMAS expresion ARROBA expresion {comprobarOperadorTernarioLista($1, $2, $3, $4, $5, &$$); }
                             | ID { $$.type = TS_GetType($1); $$.nDim = TS_GetNDim($1); decVar = 0; $$.eval = "";$$.temp_asociado = $1.lex;}

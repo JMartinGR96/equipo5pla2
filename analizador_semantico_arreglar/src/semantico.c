@@ -897,21 +897,41 @@ void concatenaLex(attrs expr1, attrs op, attrs expr2, attrs *res){
 void evaluar_expresion(attrs expr1, attrs op, attrs expr2, attrs *res)
 {
   //Condicion de parada
-  char * cadena_eval;
+  char * cadena_eval = (char *) malloc(500);
   char *temp = temporal();
-  sprintf(cadena_eval,"%s",expr1.eval);
-  sprintf(cadena_eval,"%s \n %s \n",cadena_eval, expr2.eval);
+  
+  
 
-  //res->temp_asociado = temp;
-  //res->eval = cadena_eval;
+  sprintf(cadena_eval,"%s",expr1.eval);
+  sprintf(cadena_eval,"%s %s ",cadena_eval, expr2.eval);
+  sprintf(cadena_eval,"%s \n %s %s;",cadena_eval, cadtolower(tDataToString(expr1.type)),temp);
+  sprintf(cadena_eval,"%s \n %s = %s %s %s;",cadena_eval,temp,expr1.temp_asociado,op.lex,expr2.temp_asociado);
+  
+
+  res->temp_asociado = temp;
+  res->eval = cadena_eval;
+
+}
+
+void evaluar_expresion_unaria(attrs op, attrs expr1, attrs *res)
+{
+    char * cadena_eval = (char *) malloc(500);
+    char *temp = temporal();
+
+    //sprintf(cadena_eval,"%s %s;", cadtolower(tDataToString(expr1.type)),temp);
+    sprintf(cadena_eval,"%s \n %s %s\n %s = %s%s;",cadena_eval,cadtolower(tDataToString(expr1.type)),temp,temp,op.lex,expr1.temp_asociado);
+
+    res->temp_asociado = temp;
+    res->eval = cadena_eval;
 
 }
 
 void evaluar_sentencia_asig(attrs id, attrs exp){
-  char * cadena;
-  sprintf(cadena, "{\n");
-  sprintf(cadena,"%s %s\n",cadena,exp.eval);
-  sprintf(cadena, "%s %s = %s \n }", cadena, id.lex, exp.temp_asociado);
+  char * cadena = (char *) malloc(500);
+  //sprintf(cadena, "{\n");
+  //sprintf(cadena,"%s %s\n",cadena,exp.eval);
+  sprintf(cadena,"{\n%s\n",exp.eval);
+  sprintf(cadena, "%s %s = %s;\n }", cadena, id.lex, exp.temp_asociado);
 
-  //fputs(cadena, file);
+  fputs(cadena, file);
 }

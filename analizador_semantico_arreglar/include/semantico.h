@@ -333,4 +333,5 @@ void pyc();
 void pycYSalto();
 void sentenciaIfThen(attrs e);
 void evaluar_expresion(attrs expr1, attrs op, attrs expr2, attrs *res);
+void evaluar_expresion_unaria(attrs op, attrs expr1, attrs *res);
 void evaluar_sentencia_asig(attrs id, attrs expr);
