@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 /**
  * Tipo de entrada en la tabla de símbolos
@@ -20,11 +21,11 @@ typedef enum {
   INT,                /** Entero */
   FLOAT,              /** Flotante */
   CHAR,               /** Caracter */
-  BOOLEAN,            /** Booleano */
+  BOOL,            /** Booleano */
   LIST_INT,           /** Lista de enteros */
   LIST_FLOAT,         /** Lista de flotantes */
   LIST_CHAR,          /** Lista de caracteres */
-  LIST_BOOLEAN,       /** Lista de booleanos */
+  LIST_BOOL,       /** Lista de booleanos */
 } tData;
 
 
@@ -50,10 +51,15 @@ typedef struct {
   char *lex;          /**< Nombre del lexema */
   tData type;         /**< Tipo del símbolo */
   unsigned int nDim;  /**< Dimensión de la lista */
+  char *temp_asociado;
+  char *eval;
 } attrs;
 
 #define YYSTYPE attrs   /** En adelante, cada símbolo tiene una estructura de tipo attrs */
 #define MAX_STACK 1000  /** Tamaño máximo de la tabla de símbolos */
+
+
+extern int tabs;
 
 /**
  * Pila de la tabla de símbolos (TS)
@@ -120,6 +126,13 @@ extern int checkFunction;
  * Indica posición en la TS de la función actual
  */
 extern int currentFunction;
+
+extern FILE *file;
+
+extern int temp;
+extern int etiq;
+extern int varPrinc;
+extern int decIF, decElse;
 
 
 /**
@@ -301,3 +314,23 @@ void comprobarOperadorTernarioLista(attrs expr1, attrs op1, attrs expr2, attrs o
 void comprobarLlamadaAFuncion(attrs id);
 int  comprobarMismaDimension(attrs e1, attrs e2);
 void agregarNuevoID(attrs id, attrs *res);
+
+
+char *temporal(void);
+char *etiqueta();
+void generaFich();
+void closeInter();
+
+void concatenaLex(attrs expr1, attrs op, attrs expr2, attrs *res);
+void align();
+void declarID(attrs e);
+void declarListID(attrs e);
+void Robert();
+void iniBloque();
+void finBloque();
+void saltoLinea();
+void pyc();
+void pycYSalto();
+void sentenciaIfThen(attrs e);
+void evaluar_expresion(attrs expr1, attrs op, attrs expr2, attrs *res);
+void evaluar_sentencia_asig(attrs id, attrs expr);

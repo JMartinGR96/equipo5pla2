@@ -8,6 +8,7 @@
     int yylex();
     void yyerror( const char * msg ) ;
 
+
     //int linea_actual = 1 ;
 
     #define YYERROR_VERBOSE
@@ -54,7 +55,8 @@
 
 %%
 
-programa                    : MAIN bloque ;
+programa                    : { generaFich(); } MAIN bloque { closeInter(); }
+                              ;
 
 bloque                      : INICIOBLOQUE { TS_AddMark(); }
                               declar_de_variables_locales
@@ -77,14 +79,15 @@ declar_subprog              : cabecera_subprograma { esFunc = 1; }
 variables_locales           : variables_locales cuerpo_declar_variables 
                             | cuerpo_declar_variables ;
 
-cuerpo_declar_variables     : DECLAR ID { $$.type = $1.type; setType($1);agregarNuevoID($2, &$$);} 
-                              mas_variables PYC
+cuerpo_declar_variables     : DECLAR ID { $$.type = $1.type; setType($1);agregarNuevoID($2, &$$); declarID($2); } 
+                              mas_variables PYC { pycYSalto(); }
                             | DECLAR ID error
                             | DECLAR error
                             | error ;
 
 mas_variables               : mas_variables COMA ID 
                               {
+                                declarListID($3);
                                 agregarNuevoID($3, &$$);
                               }
                             | ;
@@ -115,10 +118,10 @@ sentencia                   : bloque
                             | sentencia_adelante_atras 
                             | sentencia_principio_lista ;
 
-sentencia_asignacion        : ID OP_ASIGNACION expresion PYC { comprobarAsignacion($1, $3); }
+sentencia_asignacion        : ID OP_ASIGNACION expresion PYC { comprobarAsignacion($1, $3); evaluar_sentencia_asig($1, $3);}
                             | error;
 
-sentencia_if                : SI PARIZQ expresion_if PARDER THEN sentencia { comprobarBooleano_if($3);} 
+sentencia_if                : SI PARIZQ expresion_if PARDER THEN sentencia { comprobarBooleano_if($3); } 
                             | SI PARIZQ expresion_if PARDER THEN sentencia ELSE sentencia { comprobarBooleano_if($3);}
                               ;
 
@@ -126,7 +129,6 @@ expresion_if                : expresion { line_if = line; $$.type = $1.type; }
                               ;
 
 asignacion_for_pascal       : ID OP_ASIGNACION expresion { comprobarAsignacion($1, $3); comprobarEntero($3);}
-                            | DECLAR ID OP_ASIGNACION expresion { comprobarAsignacion($2, $4); comprobarEntero($3); }
                             | error ;
 
 sentencia_for_pascal        : FOR asignacion_for_pascal TO valor DO sentencia { comprobarEntero($4); }
@@ -167,7 +169,7 @@ expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nD
                             | NEGACION expresion {comprobarNegacionConBooleano($1, $2, &$$); }
                             | OP_AND_LIST expresion // Pa que cojones se usa????
                             | expresion ARRARR expresion {comprobarPosicionLista($1,$2,$3,&$$);}
-                            | expresion MAS_MENOS expresion { comprobarMasMenosBinario($1, $2, $3, &$$); }
+                            | expresion MAS_MENOS expresion { comprobarMasMenosBinario($1, $2, $3, &$$); evaluar_expresion($1, $2, $3, &$$); } 
                             | expresion OP_LIST_MUL expresion {comprobaOperadorBinarioConcatenarListas($1, $2, $3, &$$);}
                             | expresion OP_OR_LOG expresion { comprobarOperadorBinarioAndOr($1, $2, $3, &$$); }
                             | expresion OP_AND_LOG expresion { comprobarOperadorBinarioAndOr($1, $2, $3, &$$); }
@@ -176,9 +178,9 @@ expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nD
                             | expresion OP_MUL expresion {comprobaOperadorBinarioMultiplicacion($1, $2, $3, &$$); }
                             | expresion MENOSMENOS expresion {comprobarMenosMenos($1,$2,$3,&$$);}
                             | expresion MASMAS expresion ARROBA expresion {comprobarOperadorTernarioLista($1, $2, $3, $4, $5, &$$); }
-                            | ID { $$.type = TS_GetType($1); $$.nDim = TS_GetNDim($1); decVar = 0; }
-                            | constante { $$.type = $1.type; $$.nDim = $1.nDim; }
-                            | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1;}                   
+                            | ID { $$.type = TS_GetType($1); $$.nDim = TS_GetNDim($1); decVar = 0; $$.eval = "";$$.temp_asociado = $1.lex;}
+                            | constante { $$.type = $1.type; $$.nDim = $1.nDim; $$.eval = "";$$.temp_asociado = $1.lex; }
+                            | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1; $$.eval = "";$$.temp_asociado = $1.lex;}                   
                             | agregado { $$.type = $1.type; $$.nDim = $1.nDim; }
                               ;
                             
@@ -189,7 +191,7 @@ sentencia_principio_lista   : DOLAR ID PYC ;
 
 constante                   : CONST_INT { $$.type = INT; }
                             | CONST_FLOAT { $$.type = FLOAT; }
-                            | CONST_BOOL { $$.type = BOOLEAN; }
+                            | CONST_BOOL { $$.type = BOOL; }
                             | CONST_CHAR { $$.type = CHAR; }
                               ;
 
@@ -198,7 +200,7 @@ agregado                    : CORIZQ constante_lista CORDER { $$.type = $2.type;
 
 constante_lista             : constante_lista_int { $$.type = LIST_INT; $$.nDim = $1.nDim; }
                             | constante_lista_float { $$.type = LIST_FLOAT; $$.nDim = $1.nDim; }
-                            | constante_lista_bool { $$.type = LIST_BOOLEAN; $$.nDim = $1.nDim; }
+                            | constante_lista_bool { $$.type = LIST_BOOL; $$.nDim = $1.nDim; }
                             | constante_lista_char { $$.type = LIST_CHAR; $$.nDim = $1.nDim; }
                               ;
 

@@ -14,7 +14,6 @@ int      checkFunction   = 0;
 int      currentFunction = -1;
 int      line_if = -1;
 
-
 tData getListType(tData type) {
   switch (type) {
     case INT:
@@ -23,8 +22,8 @@ tData getListType(tData type) {
       return LIST_FLOAT;
     case CHAR:
       return LIST_CHAR;
-    case BOOLEAN:
-      return LIST_BOOLEAN;
+    case BOOL:
+      return LIST_BOOL;
     default:
       return type;
   }
@@ -40,16 +39,16 @@ const char* tDataToString(tData type) {
       return "FLOAT";
     case CHAR:
       return "CHAR";
-    case BOOLEAN:
-      return "BOOLEAN";
+    case BOOL:
+      return "BOOL";
     case LIST_INT:
       return "LIST OF INT";
     case LIST_FLOAT:
       return "LIST OF FLOAT";
     case LIST_CHAR:
       return "LIST OF CHAR";
-    case LIST_BOOLEAN:
-      return "LIST OF BOOLEAN";
+    case LIST_BOOL:
+      return "LIST OF BOOL";
     default:
       return "NONE";
   }
@@ -61,7 +60,7 @@ void setType(attrs value) {
 }
 
 int isList(attrs e) {
-  return e.type == LIST_INT || e.type == LIST_FLOAT || e.type == LIST_CHAR || e.type == LIST_BOOLEAN;
+  return e.type == LIST_INT || e.type == LIST_FLOAT || e.type == LIST_CHAR || e.type == LIST_BOOL;
 }
 
 tData listToType(tData listType) {
@@ -72,8 +71,8 @@ tData listToType(tData listType) {
       return FLOAT;
     case LIST_CHAR:
       return CHAR;
-    case LIST_BOOLEAN:
-      return BOOLEAN;
+    case LIST_BOOL:
+      return BOOL;
     default:
       return NONE;
   }
@@ -450,11 +449,11 @@ void print_TS() {
     if (ts[j].type == 1) { t = "INT"; }
     if (ts[j].type == 2) { t = "FLOAT"; }
     if (ts[j].type == 3) { t = "CHAR"; }
-    if (ts[j].type == 4) { t = "BOOLEAN"; }
+    if (ts[j].type == 4) { t = "BOOL"; }
     if (ts[j].type == 5) { t = "LIST_INT"; }
     if (ts[j].type == 6) { t = "LIST_FLOAT"; }
     if (ts[j].type == 7) { t = "LIST_CHAR"; }
-    if (ts[j].type == 8) { t = "LIST_BOOLEAN"; }
+    if (ts[j].type == 8) { t = "LIST_BOOL"; }
 
     printf("[%d]\n", j);
     printf("  -Entrada: %-12s\n", e);
@@ -477,11 +476,11 @@ void imprimirAtributos(attrs e, char *msg) {
     if (e.type == 1) { t = "INT"; }
     if (e.type == 2) { t = "FLOAT"; }
     if (e.type == 3) { t = "CHAR"; }
-    if (e.type == 4) { t = "BOOLEAN"; }
+    if (e.type == 4) { t = "BOOL"; }
     if (e.type == 5) { t = "LIST_INT"; }
     if (e.type == 6) { t = "LIST_FLOAT"; }
     if (e.type == 7) { t = "LIST_CHAR"; }
-    if (e.type == 8) { t = "LIST_BOOLEAN"; }
+    if (e.type == 8) { t = "LIST_BOOL"; }
 
   printf("------------------------------\n");
   printf("%s\n", msg);
@@ -492,7 +491,7 @@ void imprimirAtributos(attrs e, char *msg) {
 }
 
 int isNone(attrs e) {
-  return (e.type != BOOLEAN)?1:0;
+  return (e.type != BOOL)?1:0;
 }
 
 int comprobarMismaDimension(attrs e1, attrs e2) {
@@ -508,13 +507,13 @@ void comprobarAsignacion(attrs e1, attrs e2) {
 }
 
 void comprobarBooleano(attrs e) {
-  if (e.type != BOOLEAN){
+  if (e.type != BOOL){
     printf("[%sLinea %d] Expected expression of type BOOLEAN, but got type %s\n", DEBUG ? "{489}" : "",line, tDataToString(e.type));
   }
 }
 
 void comprobarBooleano_if(attrs e) {
-  if (e.type != BOOLEAN){
+  if (e.type != BOOL){
     int print = line;
     if(line_if < line && line_if != -1){
       print = line_if;
@@ -531,17 +530,17 @@ void comprobarEntero(attrs e) {
 
 void Check_ListSentence(attrs id) {
   int type = TS_GetType(id);
-  if (type != -1 && !(type == LIST_INT || type == LIST_FLOAT || type == LIST_BOOLEAN || type == LIST_CHAR))
+  if (type != -1 && !(type == LIST_INT || type == LIST_FLOAT || type == LIST_BOOL || type == LIST_CHAR))
     printf("[%sLinea %d] %s is not of type LIST, but type %s\n", DEBUG ? "{499}" : "",line, id.lex, tDataToString(type));
 }
 
 void comprobarNegacionConBooleano(attrs op, attrs expr, attrs *res) {
-  if (expr.type != BOOLEAN) {
+  if (expr.type != BOOL) {
     printf("[%sLinea %d] Unary operator ! expects expression of type ![BOOLEAN], but got type ![%s]\n",
       DEBUG ? "{505}" : "",line, tDataToString(expr.type));
     return ;
   }
-  res->type = BOOLEAN;
+  res->type = BOOL;
   res->nDim = 0;
 }
 
@@ -696,8 +695,8 @@ void comprobaOperadorBinarioConcatenarListas(attrs expr1, attrs op, attrs expr2,
 }
 
 void comprobarOperadorBinarioAndOr(attrs expr1, attrs op, attrs expr2, attrs *res) {
-  if (expr1.type == BOOLEAN && expr2.type == BOOLEAN) {
-    res->type = BOOLEAN;
+  if (expr1.type == BOOL && expr2.type == BOOL) {
+    res->type = BOOL;
     res->nDim = 0;
     return ;
   }
@@ -707,7 +706,7 @@ void comprobarOperadorBinarioAndOr(attrs expr1, attrs op, attrs expr2, attrs *re
 
 void comprobarOperadorBinarioRelacion(attrs expr1, attrs op, attrs expr2, attrs *res) {
   if ((expr1.type == INT || expr1.type == FLOAT || expr1.type == CHAR) && (expr2.type == INT || expr2.type == FLOAT || expr2.type == CHAR)) {
-    res->type = BOOLEAN;
+    res->type = BOOL;
     res->nDim = 0;
     return ;
   }
@@ -722,7 +721,7 @@ void Check_OpBinaryEq(attrs expr1, attrs op, attrs expr2, attrs *res) {
     return ;
   }
   if (expr1.type == expr2.type) {
-    res->type = BOOLEAN;
+    res->type = BOOL;
     res->nDim = 0;
     return ;
   }
@@ -775,4 +774,144 @@ void agregarNuevoID(attrs id, attrs *res) {
     TS_AddId(id);
   else
     TS_GetById(id, res);
+}
+
+//////////////////////////
+/////// Traduccion ///////
+//////////////////////////
+
+int temp = 0;
+int etiq = 0;
+int varPrinc=1;
+int decIF = 0,decElse=0;
+int tabs = 0;
+FILE *file = NULL;
+
+char *temporal(){
+	char * cadena;
+	cadena = (char *) malloc(20);
+	sprintf(cadena, "temp%d",temp);
+	temp++;
+	return cadena;
+}
+
+char *etiqueta(){
+	char *cadena;
+	cadena = (char *) malloc(20);
+	sprintf(cadena, "etiqueta_%d",etiq);
+	etiq++;
+	return cadena;
+}
+
+// Abre un fichero para crear el código intermedio
+void generaFich(){
+  file = fopen("src/traduccion.c","wr");
+  if(file == NULL){
+    fputs ("File error",stderr); exit (1);
+  }
+  
+	fputs("#include <stdio.h>\n",file);
+  fputs("#include <stdbool.h>\n",file);
+
+}
+
+// Cerrar fichero
+void closeInter(){
+
+    fclose(file);
+
+}
+
+void align(){
+  for(int i = 0; i < tabs; i++) fputs("\t",file);
+}
+
+void saltoLinea(){
+  fputs("\n",file);
+}
+void pyc(){
+  fputs(";",file);
+}
+void pycYSalto(){
+  fputs(";\n",file);
+}
+
+const char *cadtolower(const char *cadena){
+  char *cad = (char *) malloc(strlen(cadena));
+  for(int i = 0; i < strlen(cadena); i++){
+    cad[i] = tolower(cadena[i]);
+  }
+  return cad;
+}
+
+const char *replace(const char *cadena, char f, char r){
+  char *cad = (char *) malloc(strlen(cadena));
+  for(int i = 0; i < strlen(cadena); i++){
+    cad[i] = cadena[i];
+    if(cad[i] == f) cad[i] = r;
+  }
+  return cad;
+}
+
+void declarID(attrs e){
+  const char *type = replace(tDataToString(e.type), ' ', '_');
+  char *id = e.lex;
+  char *declar = (char *) malloc(strlen(type)+strlen(id) + 1);
+  sprintf(declar,"%s %s",cadtolower(type),id);
+  fputs(declar,file);
+}
+
+void declarListID(attrs e){
+  char *id = e.lex;
+  char *declar = (char *) malloc(strlen(id) + 2);
+  sprintf(declar,", %s",id);
+  fputs(declar,file);
+}
+
+void Robert(){
+  fputs("int main()",file);
+}
+
+void iniBloque(){
+  tabs++;
+  fputs("{\n",file);
+}
+
+void finBloque(){
+  tabs--;
+  fputs("}\n",file);
+}
+
+void sentenciaIfThen(attrs e){
+  char* expresion;
+  expresion = (char *) malloc(100);
+  sprintf(expresion,"if(%s)",e.lex);
+  fputs(expresion,file);
+}
+
+void concatenaLex(attrs expr1, attrs op, attrs expr2, attrs *res){
+  res->lex = (char *) malloc(strlen(expr1.lex)+strlen(op.lex)+strlen(expr2.lex));
+  sprintf(res->lex,"%s%s%s",expr1.lex,op.lex,expr2.lex);
+}
+
+void evaluar_expresion(attrs expr1, attrs op, attrs expr2, attrs *res)
+{
+  //Condicion de parada
+  char * cadena_eval;
+  char *temp = temporal();
+  sprintf(cadena_eval,"%s",expr1.eval);
+  sprintf(cadena_eval,"%s \n %s \n",cadena_eval, expr2.eval);
+
+  //res->temp_asociado = temp;
+  //res->eval = cadena_eval;
+
+}
+
+void evaluar_sentencia_asig(attrs id, attrs exp){
+  char * cadena;
+  sprintf(cadena, "{\n");
+  sprintf(cadena,"%s %s\n",cadena,exp.eval);
+  sprintf(cadena, "%s %s = %s \n }", cadena, id.lex, exp.temp_asociado);
+
+  //fputs(cadena, file);
 }

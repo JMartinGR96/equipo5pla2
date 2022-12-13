@@ -25,11 +25,11 @@ digito  [0-9]
 "int"									{yylval.type = INT; 		  					return(DECLAR);}
 "char"          						{yylval.type = CHAR; 		  					return(DECLAR);}
 "float"         						{yylval.type = FLOAT;   	  					return(DECLAR);}
-"bool"          						{yylval.type = BOOLEAN; 	  					return(DECLAR);}
+"bool"          						{yylval.type = BOOL; 	  						return(DECLAR);}
 "list of int"   						{yylval.type = LIST_INT;	  					return(DECLAR);}
 "list of char"  						{yylval.type = LIST_CHAR;     					return(DECLAR);}
 "list of float" 						{yylval.type = LIST_FLOAT;    					return(DECLAR);}
-"list of bool"  						{yylval.type = LIST_BOOLEAN;  					return(DECLAR);}
+"list of bool"  						{yylval.type = LIST_BOOL;  						return(DECLAR);}
 ")"             						{yylval.lex = strdup(yytext); 					return(PARDER);}
 "("             						{yylval.lex = strdup(yytext); 					return(PARIZQ);}
 "["             						{yylval.lex = strdup(yytext); 					return(CORIZQ);}

@@ -50,6 +50,8 @@ typedef struct {
   char *lex;          /**< Nombre del lexema */
   tData type;         /**< Tipo del símbolo */
   unsigned int nDim;  /**< Dimensión de la lista */
+  char *eval;
+  char *temp_asociado;
 } attrs;
 
 #define YYSTYPE attrs   /** En adelante, cada símbolo tiene una estructura de tipo attrs */
