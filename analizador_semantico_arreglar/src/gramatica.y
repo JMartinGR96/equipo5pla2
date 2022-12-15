@@ -8,7 +8,6 @@
     int yylex();
     void yyerror( const char * msg ) ;
 
-
     //int linea_actual = 1 ;
 
     #define YYERROR_VERBOSE
@@ -55,13 +54,21 @@
 
 %%
 
-programa                    : { generaFich(); } MAIN bloque { closeInter(); }
+programa                    : { generaFich(); } MAIN bloque_main { Robert(); volcar(); closeInter(); }
+                              ;
+                              
+bloque_main                 : INICIOBLOQUE { TS_AddMark(); nivel_bloque = 0}
+                              declar_de_variables_locales
+                              declar_de_subprogs 
+                              sentencias
+                              FINBLOQUE { TS_ClearBlock(); }
                               ;
 
-bloque                      : INICIOBLOQUE { TS_AddMark(); }
+bloque                      : INICIOBLOQUE { TS_AddMark(); nivel_bloque++; }
                               declar_de_variables_locales
-                              declar_de_subprogs sentencias
-                              FINBLOQUE { TS_ClearBlock(); }
+                              declar_de_subprogs 
+                              sentencias
+                              FINBLOQUE { TS_ClearBlock(); nivel_bloque--;}
                               ;
 
 declar_de_variables_locales : INI_DECLAR_VAR {decVar = 1; }
@@ -73,7 +80,7 @@ declar_de_subprogs          : declar_de_subprogs declar_subprog
                             | ;                                          
 
 declar_subprog              : cabecera_subprograma { esFunc = 1; }
-                              bloque { esFunc = 0; }
+                              bloque { esFunc = 0;fputs("}\n",file_funciones); }
                               ;
 
 variables_locales           : variables_locales cuerpo_declar_variables 
@@ -93,23 +100,23 @@ mas_variables               : mas_variables COMA ID
                             | ;
 
 cabecera_subprograma        : DECLAR ID { setType($1); decParam = 1; TS_AddFunction($2); }
-                              PARIZQ declaraciones_id PARDER { decParam = 0; $4.nDim = 0; }
+                              PARIZQ declaraciones_id PARDER { decParam = 0; $4.nDim = 0; impresion_lexema($1,$2, lista_param,$$.lex);}
                               ;
 
-declaraciones_id            : declaraciones_id COMA param 
-                            | param 
+declaraciones_id            : declaraciones_id COMA param {lista_param = concat(lista_param,$3.lex,',');}
+                            | param {lista_param = concat(lista_param,$1.lex,',');}
                             | declaraciones_id COMA error
                             | ;
 
-param                       : DECLAR ID { setType($1); TS_AddParam($2); }
+param                       : DECLAR ID { setType($1); TS_AddParam($2); juntarDeclarId($1,$2,&$$);  }
                               ;
 
-sentencias                  : sentencias sentencia 
+sentencias                  : sentencias sentencia
                             | ;
 
 sentencia                   : bloque 
-                            | sentencia_asignacion 
-                            | sentencia_if
+                            | sentencia_asignacion {$$.eval = $1.eval;}
+                            | sentencia_if {addSalida();}
                             | sentencia_for_pascal 
                             | sentencia_while 
                             | sentencia_entrada 
@@ -118,46 +125,61 @@ sentencia                   : bloque
                             | sentencia_adelante_atras 
                             | sentencia_principio_lista ;
 
-sentencia_asignacion        : ID OP_ASIGNACION expresion PYC { comprobarAsignacion($1, $3); evaluar_sentencia_asig($1, $3);}
+sentencia_asignacion        : ID OP_ASIGNACION expresion PYC { comprobarAsignacion($1, $3); $$.eval = evaluar_sentencia_asig($1, $3); }
                             | error;
 
-sentencia_if                : SI PARIZQ expresion_if PARDER THEN sentencia { comprobarBooleano_if($3); } 
-                            | SI PARIZQ expresion_if PARDER THEN sentencia ELSE sentencia { comprobarBooleano_if($3);}
+sentencia_if                : SI PARIZQ expresion_if PARDER THEN _sentencia { comprobarBooleano_if($3); } 
+                            | SI PARIZQ expresion_if PARDER THEN _sentencia ELSE sentencia {comprobarBooleano_if($3);}
                               ;
 
-expresion_if                : expresion { line_if = line; $$.type = $1.type; }
+_sentencia                  : sentencia { goToEndAndElse(); }
                               ;
 
-asignacion_for_pascal       : ID OP_ASIGNACION expresion { comprobarAsignacion($1, $3); comprobarEntero($3);}
+expresion_if                : expresion { line_if = line; $$.type = $1.type; evaluar_sentencia_if($1); insertIfElse(); goToElse($$.temp_asociado)}
+                              ;
+
+asignacion_for_pascal       : ID OP_ASIGNACION expresion TO valor { comprobarAsignacion($1, $3); comprobarEntero($3); comprobarEntero($5); insertFor(); goToFor($1,$3,$5); $$.lex = $1.lex; }
                             | error ;
 
-sentencia_for_pascal        : FOR asignacion_for_pascal TO valor DO sentencia { comprobarEntero($4); }
+sentencia_for_pascal        : FOR asignacion_for_pascal DO sentencia { evaluar_sentencia_for($2.lex); }
                               ;
 
 valor                       : CONST_INT { $$.type = INT; }
                             | ID { TS_GetById($1,&$$); }
                               ;
 
-sentencia_while             : MIENTRAS PARIZQ expresion PARDER sentencia { comprobarBooleano($3); }
+sentencia_while             : MIENTRAS PARIZQ expresion_while PARDER sentencia { comprobarBooleano($3); evaluar_sentencia_while(); }
                               ;
 
-sentencia_entrada           : METERDATOS lista_variables PYC ;
+expresion_while             : expresion { $$.type = $1.type; insertWhile(); goToWhile($$.temp_asociado,$1); }
+                              ;
 
-lista_variables             : lista_variables COMA ID { agregarNuevoID($3, &$$); }
-                            | ID { agregarNuevoID($1, &$$); }
+sentencia_entrada           : METERDATOS lista_variables PYC {evaluarSentenciaEntrada();}
+                              ;
+
+lista_variables             : lista_variables COMA ID { agregarNuevoID($3, &$$); addVariableListaMeterDatos($3); }
+                            | ID { agregarNuevoID($1, &$$); addVariableListaMeterDatos($1);}
                             | error ;
 
-sentencia_salida            : SACARDATOS lista_expresiones_o_cadena PYC ;
+sentencia_salida            : SACARDATOS lista_expresiones_o_cadena_sacar PYC { evaluarSentenciaSalida(); }
+                              ;
 
-lista_expresiones_o_cadena  : lista_expresiones_o_cadena COMA expr_cad { TS_CheckParam($3); }
-                            | expr_cad {checkParams = 0; TS_CheckParam($1); }
+lista_expresiones_o_cadena_sacar  : lista_expresiones_o_cadena_sacar COMA expr_cad_sacar { addVariableListaSacarDatos($3); }
+                            | expr_cad_sacar { addVariableListaSacarDatos($1); }
                               ; 
 
-expr_cad                    : expresion 
-                            | CADENA ;
+expr_cad_sacar              : ID {$$.lex = $1.lex;}
+                            | CADENA {$$.lex = $1.lex;}
 
-sentencia_return            : RETURN expresion { TS_CheckReturn($2, &$$); }
-                              PYC ;
+lista_expresiones_o_cadena  : lista_expresiones_o_cadena COMA expr_cad { TS_CheckParam($3); }
+                            | expr_cad {checkParams = 0; TS_CheckParam($1);$$.temp_asociado = lista_func;$$.eval = lista_evals;}
+                              ; 
+
+expr_cad                    : expresion {sacarTemporalAsociado($1); sacarEvalAsociado($1);}
+                              ;
+
+sentencia_return            : RETURN expresion PYC { TS_CheckReturn($2, &$$); imprimir_return($2); }
+                              ;
 
 expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nDim = $2.nDim; $$.eval = $2.eval; $$.temp_asociado = $2.temp_asociado;}
                             | MASMAS expresion { comprobarIncrementoDecremento($1, $2, &$$); evaluar_expresion_unaria($1, $2, &$$);}
@@ -180,7 +202,7 @@ expresion                   : PARIZQ expresion PARDER { $$.type = $2.type; $$.nD
                             | expresion MASMAS expresion ARROBA expresion {comprobarOperadorTernarioLista($1, $2, $3, $4, $5, &$$); }
                             | ID { $$.type = TS_GetType($1); $$.nDim = TS_GetNDim($1); decVar = 0; $$.eval = "";$$.temp_asociado = $1.lex;}
                             | constante { $$.type = $1.type; $$.nDim = $1.nDim; $$.eval = "";$$.temp_asociado = $1.lex; }
-                            | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1; $$.eval = "";$$.temp_asociado = $1.lex;}                   
+                            | funcion { $$.type = $1.type; $$.nDim = $1.nDim; currentFunction = -1; $$.eval = "";$$.temp_asociado = componerLlamadaFuncion($1.lex);}                   
                             | agregado { $$.type = $1.type; $$.nDim = $1.nDim; }
                               ;
                             
@@ -213,12 +235,18 @@ constante_lista_bool        : constante_lista_bool COMA CONST_BOOL
 constante_lista_char        : constante_lista_char COMA CONST_CHAR
                             | CONST_CHAR ;
 
-funcion                     : cabecera_funcion argumentos_funcion { $$.attr = $2.attr; $$.type = $2.type, $$.nDim = $2.nDim; }
+funcion                     : cabecera_funcion argumentos_funcion { $$.attr = $2.attr; $$.type = $2.type, $$.nDim = $2.nDim; if(esFunc)
+                                                                                                                              fputs(lista_evals,file_funciones);
+                                                                                                                              else
+                                                                                                                              fputs(lista_evals,file);
+                                                                                                                              lista_evals = NULL;}
                               ;
 
-cabecera_funcion            : ID PARIZQ { comprobarLlamadaAFuncion($1); }
+cabecera_funcion            : ID PARIZQ { comprobarLlamadaAFuncion($1);$$.lex = $1.lex }
+                              ;
 
 argumentos_funcion          : lista_expresiones_o_cadena PARDER {TS_FunctionCall(&$$);}
+                              ;
 
 %%
 

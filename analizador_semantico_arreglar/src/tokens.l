@@ -34,8 +34,8 @@ digito  [0-9]
 "("             						{yylval.lex = strdup(yytext); 					return(PARIZQ);}
 "["             						{yylval.lex = strdup(yytext); 					return(CORIZQ);}
 "]"             						{yylval.lex = strdup(yytext); 					return(CORDER);}
-"{"             						{yylval.lex = strdup(yytext); 					return(INICIOBLOQUE);}
-"}"             						{yylval.lex = strdup(yytext); 					return(FINBLOQUE);}
+"{"             						{yylval.lex = strdup(yytext);       			return(INICIOBLOQUE);}
+"}"             						{yylval.lex = strdup(yytext);       			return(FINBLOQUE);}
 ";"             						{yylval.lex = strdup(yytext); 					return(PYC);}
 ","             						{yylval.lex = strdup(yytext); 					return(COMA);}
 

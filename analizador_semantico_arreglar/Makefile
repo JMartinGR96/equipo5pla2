@@ -1,3 +1,5 @@
+# 
+
 OBJ = obj
 SRC = src
 BIN = bin
@@ -10,6 +12,8 @@ MAINSRC = ./Robert.txt
 
 all: crear clean $(BIN)/semantico
 
+$(BIN)/traduccion: $(SRC)/traduccion.c
+		gcc $(SRC)/traduccion.c -o $(BIN)/traduccion
 $(BIN)/semantico: $(OBJ)/main.o $(OBJ)/y.tab.o $(OBJ)/semantico.o
 		gcc -o $(BIN)/semantico $(OBJ)/main.o $(OBJ)/y.tab.o $(OBJ)/semantico.o
 $(OBJ)/semantico.o: $(SRC)/semantico.c
@@ -24,6 +28,11 @@ $(GEN)/y.tab.c: $(SRC)/gramatica.y $(GEN)/lex.yy.c
 $(GEN)/lex.yy.c: $(SRC)/tokens.l
 		flex $(SRC)/tokens.l
 		@mv lex.yy.c $(GEN)
+
+cc: $(BIN)/traduccion
+
+test:
+	./$(BIN)/traduccion
 
 run:
 	./$(BIN)/semantico $(MAINSRC)

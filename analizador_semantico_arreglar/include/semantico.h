@@ -10,7 +10,8 @@ typedef enum {
   MARK = 0,           /** Marca especial para referenciar los inicios de bloque */
   FUNCTION,           /** Es función */
   VAR,                /** Es variable local */
-  PARAM               /** Es parámetro formal de una función */
+  PARAM,              /** Es parámetro formal de una función */
+  CONDITION
 } tIn;
 
 /**
@@ -26,8 +27,16 @@ typedef enum {
   LIST_FLOAT,         /** Lista de flotantes */
   LIST_CHAR,          /** Lista de caracteres */
   LIST_BOOL,       /** Lista de booleanos */
+  STRING
 } tData;
 
+
+typedef struct {
+  char *EtiquetaEntrada;
+  char *EtiquetaSalida;
+  char *EtiquetaElse;
+  char *NombreVarControl;
+} DDIC;
 
 /* ELEMENTOS DE LA TABLA DE SÍMBOLOS */
 
@@ -41,6 +50,7 @@ typedef struct {
   int nParams;        /** Indica el número de parámetros formales (en el caso de una función) */
   unsigned int nDim;  /** Dimensión de la lista */
   int ended;          /** Indica si la función ha finalizado */
+  DDIC *des;
 } inTS;
 
 /**
@@ -58,6 +68,14 @@ typedef struct {
 #define YYSTYPE attrs   /** En adelante, cada símbolo tiene una estructura de tipo attrs */
 #define MAX_STACK 1000  /** Tamaño máximo de la tabla de símbolos */
 
+extern attrs lista_meterdatos[10];
+extern int indice_meterdatos;
+extern char *lista_param;
+extern char *lista_func;
+extern char *lista_evals;
+extern attrs lista_sacardatos[10];
+extern int indice_sacardatos;
+extern int nivel_bloque;
 
 extern int tabs;
 
@@ -128,6 +146,8 @@ extern int checkFunction;
 extern int currentFunction;
 
 extern FILE *file;
+extern FILE *file_definitivo;
+extern FILE *file_funciones;
 
 extern int temp;
 extern int etiq;
@@ -317,21 +337,62 @@ void agregarNuevoID(attrs id, attrs *res);
 
 
 char *temporal(void);
-char *etiqueta();
+char *etiqueta(void);
+void openFile();
+void openFileDefinitivo();
+void openFileFunciones();
 void generaFich();
 void closeInter();
+void closeFile();
+void closeFileDefinitivo();
+void closeFileFunciones();
 
 void concatenaLex(attrs expr1, attrs op, attrs expr2, attrs *res);
-void align();
+char *eliminarPos(char *cad, int index);
+char *concat(char *cad1, char *cad2, char sep);
+
+char *align();
 void declarID(attrs e);
 void declarListID(attrs e);
 void Robert();
+void RobertEnd();
 void iniBloque();
 void finBloque();
 void saltoLinea();
 void pyc();
 void pycYSalto();
-void sentenciaIfThen(attrs e);
+
+void insertIfElse();
+void goToElse(char *cond);
+void goToEndAndElse();
+void evaluar_sentencia_if(attrs expr);
+void addSalida();
+
+void insertWhile();
+void goToWhile(char *cond, attrs expr);
+void evaluar_sentencia_while();
+
+void insertFor();
+void goToFor(attrs id, attrs expr, attrs val);
+void evaluar_sentencia_for(char *lex);
+
 void evaluar_expresion(attrs expr1, attrs op, attrs expr2, attrs *res);
 void evaluar_expresion_unaria(attrs op, attrs expr1, attrs *res);
-void evaluar_sentencia_asig(attrs id, attrs expr);
+char *evaluar_sentencia_asig(attrs id, attrs expr);
+
+void addVariableListaMeterDatos(attrs id);
+void addVariableListaSacarDatos(attrs id);
+void evaluarSentenciaEntrada();
+void evaluarSentenciaSalida();
+
+void imprimePila();
+void volcar();
+
+void impresion_lexema(attrs declar, attrs id, char* var,  char *res);
+void juntarDeclarId(attrs declar, attrs id, attrs *res);
+
+void imprimir_return(attrs expr);
+void sacarTemporalAsociado(attrs expr);
+void sacarEvalAsociado(attrs expr);
+void imprimirLlamada(attrs expr);
+char* componerLlamadaFuncion(char *nombreFunc);

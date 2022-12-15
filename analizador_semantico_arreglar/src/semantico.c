@@ -14,6 +14,46 @@ int      checkFunction   = 0;
 int      currentFunction = -1;
 int      line_if = -1;
 
+const int TAMBUFFER = 2;
+
+int tabs = 1;
+int flag = 1;
+
+void formatear(char *buffer, FILE *file){
+  if(buffer[0] == '}') tabs--;
+    
+    if(flag == 1){
+      char *ts = align();
+      strcat(ts,buffer);
+      fputs(ts,file_definitivo);
+    }
+    else fputs(buffer,file_definitivo);
+
+    if(buffer[0] == '{') tabs++;
+
+    flag = 0;
+    if(buffer[0] == '\n') flag = 1;
+}
+
+void volcar(){
+  char buffer[TAMBUFFER];
+  closeFile();
+  file = fopen("src/traduccion_temporal.txt","r");
+  while (fgets(buffer,TAMBUFFER,file)){
+    formatear(buffer,file_definitivo);
+  }
+  
+  RobertEnd();
+
+  closeFileFunciones();
+  file_funciones = fopen("src/traduccion_funciones.txt","r");
+  fputs("\n\n",file_definitivo);
+  tabs = 0;
+  while (fgets(buffer,TAMBUFFER,file_funciones)){
+    formatear(buffer,file_definitivo);
+  }
+}
+
 tData getListType(tData type) {
   switch (type) {
     case INT:
@@ -86,6 +126,8 @@ int TS_AddEntry(inTS in) {
     ts[TOS].type    = in.type;
     ts[TOS].nParams = in.nParams;
     ts[TOS].nDim    = in.nDim;
+
+    ts[TOS].des = in.des;
     // WIP -> ts[TOS].ended   = in.ended;
 
     TOS++;          // Se aumenta el contador de entradas
@@ -153,7 +195,7 @@ int TS_ClearBlock() {
 
 void updateCurrentFunction(int lastFunc) {
   lastFunc--;
-  while (ts[lastFunc].entry != FUNCTION && lastFunc > 0){
+  while (ts[lastFunc].entry != FUNCTION && lastFunc > 0) {
     lastFunc--;
   }
   if (lastFunc == 0) {
@@ -312,7 +354,7 @@ void TS_AddParam(attrs e) {
   int j = TOS - 1;
   int found = 0;
 
-  while (j != currentFunction && !found){   // Comprobamos si ya existe un argumento de esa
+  while (j != currentFunction && !found) {   // Comprobamos si ya existe un argumento de esa
                                             // función con el mismo nombre
     if (strcmp(ts[j].lex, e.lex) != 0) {
       j--;
@@ -364,7 +406,7 @@ void TS_CheckReturn(attrs expr, attrs *res) {
 
 void TS_GetById(attrs id, attrs *res) {
   int index = TS_FindById(id);
-  if(index == -1) {   // No es ninguna variable de la TS
+  if (index == -1 && id.lex[0] != '"') {   // No es ninguna variable de la TS
     //if (TS[index].entry != FUNCTION)
     printf("[Linea %d] Search error. Id not found: %s\n", line, id.lex);
   } else {
@@ -375,7 +417,7 @@ void TS_GetById(attrs id, attrs *res) {
 
 void TS_GetByIdFunction(attrs id, attrs *res) {
   int index = TS_FindFunctionById(id);
-  if(index == -1) {   // No es ninguna variable de la TS
+  if (index == -1) {   // No es ninguna variable de la TS
     //if (TS[index].entry != FUNCTION)
     printf("[Linea %d] Search error. Id not found: %s\n", line, id.lex);
   } else {
@@ -507,15 +549,15 @@ void comprobarAsignacion(attrs e1, attrs e2) {
 }
 
 void comprobarBooleano(attrs e) {
-  if (e.type != BOOL){
+  if (e.type != BOOL) {
     printf("[%sLinea %d] Expected expression of type BOOLEAN, but got type %s\n", DEBUG ? "{489}" : "",line, tDataToString(e.type));
   }
 }
 
-void comprobarBooleano_if(attrs e) {
-  if (e.type != BOOL){
+void comprobarBooleano_if (attrs e) {
+  if (e.type != BOOL) {
     int print = line;
-    if(line_if < line && line_if != -1){
+    if (line_if < line && line_if != -1) {
       print = line_if;
       printf("[%sLinea %d] Expected expression of type BOOLEAN, but got type %s\n", DEBUG ? "{489}" : "",print, tDataToString(e.type));
       line_if = -1;
@@ -784,10 +826,23 @@ int temp = 0;
 int etiq = 0;
 int varPrinc=1;
 int decIF = 0,decElse=0;
-int tabs = 0;
-FILE *file = NULL;
 
-char *temporal(){
+FILE *file = NULL;
+FILE *file_definitivo = NULL;
+FILE *file_funciones = NULL;
+
+attrs lista_meterdatos[10];
+int indice_meterdatos=0;
+
+char *lista_param;
+char *lista_func;
+char *lista_evals;
+
+attrs lista_sacardatos[10];
+int indice_sacardatos=0;
+int nivel_bloque;
+
+char *temporal() {
 	char * cadena;
 	cadena = (char *) malloc(20);
 	sprintf(cadena, "temp%d",temp);
@@ -795,143 +850,658 @@ char *temporal(){
 	return cadena;
 }
 
-char *etiqueta(){
+char *etiqueta() {
 	char *cadena;
 	cadena = (char *) malloc(20);
-	sprintf(cadena, "etiqueta_%d",etiq);
+	sprintf(cadena, "etiqueta%d",etiq);
 	etiq++;
 	return cadena;
 }
 
-// Abre un fichero para crear el código intermedio
-void generaFich(){
-  file = fopen("src/traduccion.c","wr");
-  if(file == NULL){
+void openFile(){
+  file = fopen("src/traduccion_temporal.txt","wr");
+  if (file == NULL) {
     fputs ("File error",stderr); exit (1);
   }
+}
+
+void openFileDefinitivo(){
+  file_definitivo = fopen("src/traduccion.c","wr");
+  if (file_definitivo == NULL) {
+    fputs ("File definitivo error",stderr); exit (1);
+  }
+}
+
+void openFileFunciones(){
+  file_funciones = fopen("src/traduccion_funciones.txt","wr");
+  if (file_funciones == NULL) {
+    fputs ("File funciones error",stderr); exit (1);
+  }
+}
+
+// Abre un fichero para crear el código intermedio
+void generaFich() {
+  openFile();
+  openFileDefinitivo();
+  openFileFunciones();
   
-	fputs("#include <stdio.h>\n",file);
-  fputs("#include <stdbool.h>\n",file);
+	fputs("#include <stdio.h>\n",file_definitivo);
+  fputs("#include <stdbool.h>\n\n",file_definitivo);
 
 }
 
 // Cerrar fichero
-void closeInter(){
-
-    fclose(file);
-
+void closeInter() {
+  closeFile();
+  closeFileDefinitivo();
+  closeFileFunciones();
 }
 
-void align(){
-  for(int i = 0; i < tabs; i++) fputs("\t",file);
+void closeFile(){
+  fclose(file);
+  file = NULL;
 }
 
-void saltoLinea(){
+void closeFileDefinitivo(){
+  fclose(file_definitivo);
+  file_definitivo = NULL;
+}
+
+void closeFileFunciones(){
+  fclose(file_funciones);
+  file_funciones = NULL;
+}
+
+char *align() {
+  char *ts = (char *) malloc(tabs);
+  for (int i = 0; i < tabs; i++){
+    ts[i] = '\t';
+  }
+  return ts;
+}
+
+void saltoLinea() {
   fputs("\n",file);
 }
-void pyc(){
-  fputs(";",file);
+void pyc() {
+  if(esFunc){
+    fputs(";",file_funciones);
+  }else if(nivel_bloque)
+    fputs(";",file);
+  else
+    fputs(";", file_definitivo);
 }
-void pycYSalto(){
-  fputs(";\n",file);
+void pycYSalto() {
+  if(esFunc){
+    fputs(";\n",file_funciones);
+  }else if(nivel_bloque)
+    fputs(";\n",file);
+  else
+    fputs(";\n",file_definitivo);
 }
 
-const char *cadtolower(const char *cadena){
+const char *cadtolower(const char *cadena) {
   char *cad = (char *) malloc(strlen(cadena));
-  for(int i = 0; i < strlen(cadena); i++){
+  for (int i = 0; i < strlen(cadena); i++) {
     cad[i] = tolower(cadena[i]);
   }
   return cad;
 }
 
-const char *replace(const char *cadena, char f, char r){
+const char *replace(const char *cadena, char f, char r) {
   char *cad = (char *) malloc(strlen(cadena));
-  for(int i = 0; i < strlen(cadena); i++){
+  for (int i = 0; i < strlen(cadena); i++) {
     cad[i] = cadena[i];
-    if(cad[i] == f) cad[i] = r;
+    if (cad[i] == f) cad[i] = r;
   }
   return cad;
 }
 
-void declarID(attrs e){
+void declarID(attrs e) {
   const char *type = replace(tDataToString(e.type), ' ', '_');
   char *id = e.lex;
   char *declar = (char *) malloc(strlen(type)+strlen(id) + 1);
   sprintf(declar,"%s %s",cadtolower(type),id);
-  fputs(declar,file);
+  if(esFunc){
+    fputs(declar,file_funciones);
+  }else if(nivel_bloque)
+    fputs(declar,file);
+  else
+    fputs(declar,file_definitivo);
 }
 
-void declarListID(attrs e){
+void declarListID(attrs e) {
   char *id = e.lex;
   char *declar = (char *) malloc(strlen(id) + 2);
   sprintf(declar,", %s",id);
-  fputs(declar,file);
+  if(esFunc) fputs(declar,file_funciones);
+  else if(nivel_bloque) fputs(declar,file);
+  else fputs(declar,file_definitivo);
 }
 
-void Robert(){
-  fputs("int main()",file);
+void Robert() {
+  fputs("\nint main(){\n",file_definitivo);
 }
 
-void iniBloque(){
-  tabs++;
+void RobertEnd() {
+  fputs("\n\treturn 0;\n}", file_definitivo);
+}
+
+void iniBloque() { 
   fputs("{\n",file);
 }
 
-void finBloque(){
-  tabs--;
+void finBloque() {
   fputs("}\n",file);
 }
 
-void sentenciaIfThen(attrs e){
-  char* expresion;
-  expresion = (char *) malloc(100);
-  sprintf(expresion,"if(%s)",e.lex);
-  fputs(expresion,file);
-}
-
-void concatenaLex(attrs expr1, attrs op, attrs expr2, attrs *res){
+void concatenaLex(attrs expr1, attrs op, attrs expr2, attrs *res) {
   res->lex = (char *) malloc(strlen(expr1.lex)+strlen(op.lex)+strlen(expr2.lex));
   sprintf(res->lex,"%s%s%s",expr1.lex,op.lex,expr2.lex);
 }
 
+char *eliminarPos(char *cad, int index) {
+  int size = strlen(cad);
+  if (size > 0) {
+    int contador = 0;
+    char *cadena = (char *) malloc(size-1);
+    for (int i = 0; i < size; i++) {
+      if (i != index) {
+        cadena[contador] = cad[i];
+        contador++;
+      }
+    }
+    return cadena;
+  }
+  return "";
+}
+
+char *concat(char *cad1, char *cad2, char sep) {
+  if(!cad1) return cad2;
+  else{
+    char *cad = (char *) malloc(strlen(cad1)+strlen(cad2)+1);
+    sprintf(cad,"%s%c%s",cad1,sep,cad2);
+    return cad;
+  } 
+  
+}
+
 void evaluar_expresion(attrs expr1, attrs op, attrs expr2, attrs *res)
 {
-  //Condicion de parada
-  char * cadena_eval = (char *) malloc(500);
   char *temp = temporal();
-  
-  
+  const char *type = cadtolower(tDataToString(expr1.type));
+  int size = strlen(expr1.eval)+strlen(expr2.eval)+strlen(type)+strlen(temp)*2+strlen(expr1.temp_asociado)+strlen(op.lex)+strlen(expr2.temp_asociado)+10;
+  char * cadena_eval = (char *) malloc(size);
 
   sprintf(cadena_eval,"%s",expr1.eval);
-  sprintf(cadena_eval,"%s %s ",cadena_eval, expr2.eval);
-  sprintf(cadena_eval,"%s \n %s %s;",cadena_eval, cadtolower(tDataToString(expr1.type)),temp);
-  sprintf(cadena_eval,"%s \n %s = %s %s %s;",cadena_eval,temp,expr1.temp_asociado,op.lex,expr2.temp_asociado);
-  
+  sprintf(cadena_eval,"%s%s",cadena_eval, expr2.eval);
+  sprintf(cadena_eval,"%s\n%s %s;",cadena_eval,type,temp);
+  sprintf(cadena_eval,"%s\n%s = %s %s %s;",cadena_eval,temp,expr1.temp_asociado,op.lex,expr2.temp_asociado);
 
   res->temp_asociado = temp;
   res->eval = cadena_eval;
-
 }
 
 void evaluar_expresion_unaria(attrs op, attrs expr1, attrs *res)
 {
-    char * cadena_eval = (char *) malloc(500);
-    char *temp = temporal();
+  const char *type = cadtolower(tDataToString(expr1.type));
+  char *temp = temporal();
+  int size = strlen(type)+strlen(temp)*2+strlen(op.lex)+strlen(expr1.temp_asociado)+10;
+  char *cadena_eval = (char *) malloc(size);
 
-    //sprintf(cadena_eval,"%s %s;", cadtolower(tDataToString(expr1.type)),temp);
-    sprintf(cadena_eval,"%s \n %s %s\n %s = %s%s;",cadena_eval,cadtolower(tDataToString(expr1.type)),temp,temp,op.lex,expr1.temp_asociado);
+  sprintf(cadena_eval," \n %s %s\n %s = %s%s;",type,temp,temp,op.lex,expr1.temp_asociado);
 
-    res->temp_asociado = temp;
-    res->eval = cadena_eval;
+  res->temp_asociado = temp;
+  res->eval = cadena_eval;
+}
+
+char *evaluar_sentencia_asig(attrs id, attrs exp) {
+  int size = strlen(exp.eval)+strlen(id.lex)+strlen(exp.temp_asociado)+4;
+  char *cadena = (char *) malloc(size);
+  
+  sprintf(cadena,"%s",exp.eval);
+  sprintf(cadena,"%s\n%s = %s;\n",cadena,id.lex,exp.temp_asociado);
+  
+
+  cadena = eliminarPos(cadena,0);
+
+  if(esFunc){
+    fputs("{\n",file_funciones);
+    fputs(cadena,file_funciones);
+    fputs("}\n",file_funciones);
+  }else{
+    iniBloque();
+    fputs(cadena, file);
+    finBloque();
+  }
+  
+
+  return cadena;
+}
+
+///////////// IF ELSE //////////////////
+
+char *searchElse () {
+  char *etiq ;
+  int i = TOS - 1 ;
+  int pos = -1 ;
+  while ( i > 0 && pos == -1 ) {
+    if ( ts[i].entry == CONDITION ) pos = i ;
+    i-- ;
+  }
+  etiq = ts[pos].des->EtiquetaElse ;
+  char *copy = (char *) malloc(strlen(etiq));
+  sprintf(copy,"%s",etiq);
+  return (copy) ;
+}
+
+char *searchSalida () {
+  char *etiq ;
+  int i = TOS - 1 ;
+  int pos = -1 ;
+  while ( i > 0 && pos == -1 ) {
+    if ( ts[i].entry == CONDITION ) pos = i ;
+    i-- ;
+  }
+  
+  etiq = ts[pos].des->EtiquetaSalida ;
+  char *copy = (char *) malloc(strlen(etiq));
+  sprintf(copy,"%s",etiq);
+  return (copy) ;
+}
+
+void insertIfElse() {
+  inTS newIn ;
+  DDIC *dp = (DDIC *) malloc(sizeof(DDIC));
+  
+  //dp.EtiquetaEntrada = etiqueta();
+  dp->EtiquetaElse = etiqueta();
+  dp->EtiquetaSalida = etiqueta();
+  
+
+  newIn.entry = CONDITION;
+  newIn.lex = "ifthenelse";
+  newIn.type = NONE;
+  newIn.nDim = 0;
+  newIn.nParams = 0;
+
+  newIn.des = dp;
+  TS_AddEntry(newIn);
+}
+
+void goToElse(char *cond) {
+  char *etiq_else = searchElse();
+  char *ifsentence = (char *) malloc(strlen(cond)+strlen(etiq_else)+13) ;
+
+  strcat(ifsentence, "if (!") ;
+  strcat(ifsentence, cond) ;
+  strcat(ifsentence, ") goto ") ;
+  strcat(ifsentence, etiq_else) ;
+  strcat(ifsentence, ";\n{\n") ;
+  
+  //printf("%s",ifsentence);
+  if(esFunc){
+    fputs(ifsentence,file_funciones);
+  }else{
+    fputs(ifsentence,file) ;
+  }
+  
+}
+
+void goToEndAndElse() {
+  char *etiq_else = searchElse();
+  char *etiq_salida = searchSalida();
+  char *result = (char *) malloc(strlen(etiq_else)+strlen(etiq_salida)+9);
+  
+  sprintf(result, "}\ngoto %s;\n",etiq_salida);
+  sprintf(result, "%s%s:\n{\n",result,etiq_else);
+  
+  if(esFunc){
+    fputs(result, file_funciones);
+  }else{
+    fputs(result, file);
+  }
+  
+}
+
+void addSalida() {
+  char *etiq_salida = searchSalida();
+  char *result = (char *) malloc(strlen(etiq_salida)+4);
+
+  sprintf(result,"}\n%s:;\n",etiq_salida);
+
+  if(esFunc){
+    fputs(result, file_funciones);
+  }else{
+    fputs(result, file);
+  }
+  
+}
+
+void evaluar_sentencia_if (attrs expr) {
+  char *cadena = (char *) malloc(strlen(expr.eval)+1);
+  expr.eval = eliminarPos(expr.eval,0);
+  
+  sprintf(cadena,"%s\n",expr.eval);
+  
+  if(esFunc){
+    fputs(cadena,file_funciones);
+  }else{
+    fputs(cadena, file);
+  }
+  
+}
+
+DDIC *searchCondition(const char *lex) {
+  int i = TOS - 1 ;
+  int pos = -1 ;
+  while ( i > 0 && pos == -1 ) {
+    if ( ts[i].entry == CONDITION && strcmp(ts[i].lex,lex) == 0) pos = i ;
+    i-- ;
+  }
+  DDIC *des = ts[pos].des;
+  return (des) ; 
+}
+
+void insertWhile() {
+  inTS newIn ;
+  DDIC *dp = (DDIC *) malloc(sizeof(DDIC));
+  
+  dp->EtiquetaEntrada = etiqueta();
+  //dp->EtiquetaElse = etiqueta();
+  dp->EtiquetaSalida = etiqueta();
+  
+
+  newIn.entry = CONDITION;
+  newIn.lex = "while";
+  newIn.type = NONE;
+  newIn.nDim = 0;
+  newIn.nParams = 0;
+
+  newIn.des = dp;
+  TS_AddEntry(newIn);
+}
+
+void goToWhile(char *cond, attrs expr) {
+  // Pillamos las etiquetas
+  DDIC *des = searchCondition("while") ;
+  char *etiq_in = des->EtiquetaEntrada ;
+  char *etiq_sal = des->EtiquetaSalida;
+  char *whilesentence = (char *) malloc(strlen(etiq_in)+strlen(expr.eval)+strlen(cond)+strlen(etiq_sal)+18);
+
+  // Añadimos a whilesentences las etiquetas y las condiciones
+  sprintf(whilesentence,"\n%s",etiq_in);
+  sprintf(whilesentence,"%s:;",whilesentence) ;
+  sprintf(whilesentence,"%s%s\n",whilesentence,expr.eval);
+  sprintf(whilesentence, "\n%sif(!%s) goto %s;\n{\n",whilesentence,cond, etiq_sal); //expr.eval
+
+  if(esFunc){
+    fputs(whilesentence,file_funciones);
+  }else{
+    fputs(whilesentence,file) ; 
+  }
+  
+}
+
+void evaluar_sentencia_while() {
+  DDIC *inOutWhile = searchCondition("while");
+  char *etiq_entrada = inOutWhile->EtiquetaEntrada;
+  char *etiq_salida = inOutWhile->EtiquetaSalida;
+  char *cadena = (char *) malloc(strlen(etiq_entrada)+strlen(etiq_salida)+12);
+
+  //sprintf(cadena,"%s\n",expr.eval);
+  sprintf(cadena,"}\ngoto %s;\n",etiq_entrada);
+  sprintf(cadena,"%s%s:\n",cadena, etiq_salida);
+  if(esFunc){
+    fputs(cadena,file_funciones);
+  }else{
+    fputs(cadena, file);
+  }
+  
+}
+
+void insertFor(){
+  inTS newIn ;
+  DDIC *dp = (DDIC *) malloc(sizeof(DDIC));
+  
+  dp->EtiquetaEntrada = etiqueta();
+  //dp->EtiquetaElse = etiqueta();
+  dp->EtiquetaSalida = etiqueta();
+  
+
+  newIn.entry = CONDITION;
+  newIn.lex = "for";
+  newIn.type = NONE;
+  newIn.nDim = 0;
+  newIn.nParams = 0;
+
+  newIn.des = dp;
+  TS_AddEntry(newIn);
+}
+
+void goToFor(attrs id, attrs expr, attrs val){
+  DDIC *des = searchCondition("for") ;
+  char *etiq_in = des->EtiquetaEntrada ;
+  char *etiq_sal = des->EtiquetaSalida;
+  char *forsentence = (char *) malloc(strlen(expr.eval)+strlen(id.lex)*2+strlen(expr.temp_asociado)+strlen(etiq_in)+strlen(val.lex)+strlen(etiq_sal)+23);
+
+  
+  sprintf(forsentence, "%s\n%s=%s",expr.eval,id.lex, expr.temp_asociado);
+  sprintf(forsentence, "%s;\n%s:",forsentence,etiq_in);
+  sprintf(forsentence, "%s\nif(!(%s<%s)) goto %s;\n{\n",forsentence,id.lex,val.lex,etiq_sal);
+  
+  //printf("%s",expr.eval);
+
+  //printf();
+/*
+  sprintf(forsentence,"\n%s",etiq_in);
+  sprintf(forsentence,"%s:",forsentence) ;
+  sprintf(forsentence,"%s%s\n",forsentence,expr.eval);
+  sprintf(forsentence, "\n%sif(!%s) goto %s;\n{\n",forsentence,cond, etiq_sal);*/
+
+  if(esFunc){
+    fputs(forsentence,file_funciones);
+  }else{
+    fputs(forsentence,file) ;
+  }
+  
+}
+
+void evaluar_sentencia_for(char *lex){
+  DDIC *inOutWhile = searchCondition("for");
+  char *etiq_entrada = inOutWhile->EtiquetaEntrada;
+  char *etiq_salida = inOutWhile->EtiquetaSalida;
+  char *cadena = (char *) malloc(strlen(etiq_entrada)+strlen(etiq_salida)+strlen(lex)+16);
+
+  sprintf(cadena,"}\n++%s;",lex);
+  sprintf(cadena,"%s\ngoto %s;\n",cadena,etiq_entrada);
+  sprintf(cadena,"%s%s:;\n",cadena, etiq_salida);
+  
+  if(esFunc){
+    fputs(cadena,file_funciones);
+  }else{
+    fputs(cadena, file);
+  }
+  
+}
+
+void addVariableListaMeterDatos(attrs id){
+  attrs *res;
+  TS_GetById(id,res);
+  if(indice_meterdatos < 10){
+    lista_meterdatos[indice_meterdatos] = *res;
+    indice_meterdatos++;
+  }
+}
+
+// Para procesar sentencias de entrada
+void evaluarSentenciaEntrada(){
+  char * entre_comillas = (char *) malloc(500);
+  
+  sprintf(entre_comillas,"scanf(\"");
+  for(int i = 0; i < indice_meterdatos; i++){
+    if(lista_meterdatos[i].type == INT || lista_meterdatos[i].type == BOOL){
+      sprintf(entre_comillas,"%s%s",entre_comillas,"%d");
+    }else if(lista_meterdatos[i].type == FLOAT){
+      sprintf(entre_comillas,"%s%s",entre_comillas,"%f");
+    }else if(lista_meterdatos[i].type == CHAR){
+      sprintf(entre_comillas,"%s%s",entre_comillas,"%s");
+    }
+  }
+  sprintf(entre_comillas,"%s\"",entre_comillas);
+
+  for(int i=0; i < indice_meterdatos; i++){
+    sprintf(entre_comillas, "%s,&%s",entre_comillas,lista_meterdatos[i].lex);
+  }
+  
+  sprintf(entre_comillas,"%s);\n",entre_comillas);
+  indice_meterdatos = 0;
+
+  if(esFunc){
+    fputs(entre_comillas, file_funciones);
+  }else{
+    fputs(entre_comillas, file);
+  }
+  
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Para procesar sentencias de salida
+//
+// Esto:
+//    sacar<-("blablabla", a, "bla", b+c, "bla");
+//
+// pasaria a ser:
+//    printf("blablabla%tbla%tbla", a, b+c);
+//
+// Entonces necesitamos:
+//    - un "entre_comillas_cadena" para guardar la cadena.
+//    - un "entre_comillas_varibles" para guardar las variables utilizadas en la cadena.
+//    - un "entre_comillas" para guardar la concatenacion de lo anterior.
+//
+// sprintf(entre_comillas,"%s%s",entre_comillas_cadena,entre_comillas_variables);
+//
+// PROCESO:
+// ???
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void addVariableListaSacarDatos(attrs id){
+  attrs res;
+  int index = TS_FindById(id);
+
+  res.type = STRING;
+  res.lex = id.lex;
+  if (index >= 0) {
+    res.lex  = ts[index].lex; 
+    res.type = ts[index].type;
+  }
+  
+  if (indice_sacardatos< 10) {
+    lista_sacardatos[indice_sacardatos] = res;
+    indice_sacardatos++;
+  }
+  
+}
+
+void evaluarSentenciaSalida(){
+  char * entre_comillas = (char *) malloc(500);
+  
+  sprintf(entre_comillas,"printf(\"");
+  for(int i = 0; i < indice_sacardatos; i++){
+    if(lista_sacardatos[i].type == INT || lista_sacardatos[i].type == BOOL){
+      sprintf(entre_comillas,"%s %s ",entre_comillas,"%d");
+    }else if(lista_sacardatos[i].type == FLOAT){
+      sprintf(entre_comillas,"%s %s ",entre_comillas,"%f");
+    }else if(lista_sacardatos[i].type == CHAR || lista_sacardatos[i].type == STRING){
+      sprintf(entre_comillas,"%s %s ",entre_comillas,"%s");
+    }
+  }
+  sprintf(entre_comillas,"%s \"",entre_comillas);
+
+  for(int i=0; i < indice_sacardatos; i++){
+    sprintf(entre_comillas, "%s,%s",entre_comillas,lista_sacardatos[i].lex);
+  }
+  
+  
+  sprintf(entre_comillas,"%s);\n",entre_comillas);
+  indice_sacardatos = 0;
+
+  if(esFunc){
+    fputs(entre_comillas, file_funciones);
+  }else{
+    fputs(entre_comillas, file);
+  }
+  
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void imprimePila(){
+  attrs id;
+  char * buffer_intermedio = (char*) malloc(500);
+  
+  for (int i = 0; i < TOS; i++) {
+    id.lex = ts[i].lex;
+    int index = TS_FindById(id);
+    if (index >= 0) {
+      printf("%s -> %s\n",ts[index].lex, tDataToString(ts[index].type));
+    }
+  }
+}
+
+void impresion_lexema(attrs declar, attrs id, char* var, char *res)
+{
+  char *imprimir = (char*) malloc(strlen(cadtolower(tDataToString(declar.type))) + strlen(id.lex) + strlen(var) + 5);
+  
+  sprintf(imprimir,"%s %s(%s);\n",cadtolower(tDataToString(declar.type)), id.lex, var);
+
+  //printf("\n45%s\n",var);
+  res = imprimir;
+  fputs( imprimir,file_definitivo);
+  
+  fputs( eliminarPos(imprimir, strlen(imprimir)-2),file_funciones);
+  fputs("{\n",file_funciones);
+  //Vaciado lista_param
+  //printf("%s",lista_param);
+  for(int i = 0; i < strlen(lista_param); i++){
+    lista_param[i] = '\0';
+  }
+  lista_param = NULL;
 
 }
 
-void evaluar_sentencia_asig(attrs id, attrs exp){
-  char * cadena = (char *) malloc(500);
-  //sprintf(cadena, "{\n");
-  //sprintf(cadena,"%s %s\n",cadena,exp.eval);
-  sprintf(cadena,"{\n%s\n",exp.eval);
-  sprintf(cadena, "%s %s = %s;\n }", cadena, id.lex, exp.temp_asociado);
-
-  fputs(cadena, file);
+void juntarDeclarId(attrs declar, attrs id, attrs *res){
+  char * devolver = (char *) malloc(strlen(declar.lex) + strlen(id.lex) + 1);
+  sprintf(devolver, "%s %s", cadtolower(tDataToString(declar.type)), id.lex);
+  res->lex = devolver;
 }
+
+
+void imprimir_return(attrs expr){
+  char *cadena = (char *) malloc(strlen(expr.temp_asociado)+strlen(expr.eval)+10);
+
+  sprintf(cadena, "%s\n", expr.eval);
+  sprintf(cadena, "%sreturn %s;\n", cadena,expr.temp_asociado);
+
+  fputs(cadena, file_funciones);
+}
+
+void sacarEvalAsociado(attrs expr){
+  char * cadena = (char*) malloc (strlen(expr.eval) );
+  sprintf(cadena, "%s", expr.eval);
+  lista_evals = concat(lista_evals ,cadena,'\n');
+}
+
+void sacarTemporalAsociado(attrs expr){
+  char * cadena = (char*) malloc (strlen(expr.temp_asociado) );
+  sprintf(cadena, "%s", expr.temp_asociado);
+  lista_func = concat(lista_func,cadena,',');
+}
+
+char* componerLlamadaFuncion(char *nombreFunc){
+  char * cadena = (char *) malloc(strlen(lista_func) + strlen(nombreFunc) + 3);
+  sprintf(cadena,"%s(%s)",nombreFunc,lista_func);
+  lista_func = NULL;
+  return cadena;
+}
+
