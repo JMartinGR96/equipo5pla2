@@ -1,7 +1,0 @@
-int incrementar(int a)
-{
-
-int temp0;
-temp0 = a + 1;
-return temp0;
-}

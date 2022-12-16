@@ -1,31 +1,40 @@
 Robert
 {
     begin_var
-        int n, curr;
+        int num, n, f;
     end_var
 
-    int incrementar(int a)
-    {
-        return a+1;
-    }
-
-    sacar<-"Introduce un número";
-    meter->n;
-    sacar<-n," == ";
-    curr = 2;
-    while(curr <= n){
+    int fibonacci(int n){
         begin_var
-            int d;
+            int a,b;
         end_var
-        d = n/curr;
 
-        if( d*curr == n )then{
-            sacar<-curr," ";
-            n = n/curr;
-        }else{
-            curr = incrementar(curr);
+        if(n>2) then{
+            a = fibonacci(n-1);
+            b = fibonacci(n-2);
+            return a+b;
         }
+
+        if(n == 2) then return 1;
+        if(n==1) then return 1;
+        if(n==0) then return 0;
     }
+
+    sacar<-"Qillo dame un numero--->: ";
+    meter->n;
+
+    
+    for num = 0 to n do {
+        f = fibonacci(num);
+        sacar<-f;
+    }
+
     sacar<-"\n";
 
+    for num = 0 to n do {
+        f = fibonacci(num);
+        f = f*2;
+        sacar<-f;
+    }
+    
 }

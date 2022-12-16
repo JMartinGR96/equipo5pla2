@@ -52,6 +52,9 @@ void volcar(){
   while (fgets(buffer,TAMBUFFER,file_funciones)){
     formatear(buffer,file_definitivo);
   }
+
+  remove("src/traduccion_temporal.txt");
+  remove("src/traduccion_funciones.txt");
 }
 
 tData getListType(tData type) {

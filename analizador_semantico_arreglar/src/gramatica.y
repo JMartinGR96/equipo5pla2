@@ -86,11 +86,13 @@ declar_subprog              : cabecera_subprograma { esFunc = 1; }
 variables_locales           : variables_locales cuerpo_declar_variables 
                             | cuerpo_declar_variables ;
 
-cuerpo_declar_variables     : DECLAR ID { $$.type = $1.type; setType($1);agregarNuevoID($2, &$$); declarID($2); } 
-                              mas_variables PYC { pycYSalto(); }
+cuerpo_declar_variables     : primera mas_variables PYC { pycYSalto(); }
                             | DECLAR ID error
                             | DECLAR error
                             | error ;
+
+primera                     : DECLAR ID { $$.type = $1.type; setType($1);agregarNuevoID($2, &$$); declarID($2); }
+                              ;
 
 mas_variables               : mas_variables COMA ID 
                               {

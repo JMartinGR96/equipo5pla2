@@ -38,7 +38,7 @@ run:
 	./$(BIN)/semantico $(MAINSRC)
 
 clean:
-	@rm -rf $(GEN)/* $(OBJ)/* $(BIN)/* $(OUT)/*
+	@rm -rf $(GEN)/* $(OBJ)/* $(BIN)/* $(OUT)/* $(SRC)/traduccion.c
 
 crear:
 	@mkdir -p $(BIN) $(GEN) $(OBJ) $(OUT)
